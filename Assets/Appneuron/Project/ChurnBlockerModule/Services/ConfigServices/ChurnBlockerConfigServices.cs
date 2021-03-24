@@ -1,6 +1,4 @@
 ﻿
-using Assets.Appneuron.DataAccessBase.Concrete;
-using Assets.Appneuron.DataModelBase.Concrete;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;

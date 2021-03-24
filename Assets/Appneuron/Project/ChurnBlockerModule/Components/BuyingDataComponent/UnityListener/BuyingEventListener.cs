@@ -12,11 +12,18 @@ namespace Assets.Appneuron.Project.ChurnBlockerModule.Components.BuyingDataCompo
 {
     public class BuyingEventListener: MonoBehaviour
     {
-        BuyingEventDataManager advEventWorkflows = new BuyingEventDataManager();
+
+        private readonly IBuyingEventDataManager _buyingEventDataManager;
         CounterServices counterServices;
+        public BuyingEventListener(IBuyingEventDataManager buyingEventDataManager)
+        {
+            _buyingEventDataManager = buyingEventDataManager;
+        }
+
+
         void Start()
         {
-            advEventWorkflows.CheckAdvFileAndSendData();
+            _buyingEventDataManager.CheckAdvFileAndSendData();
             counterServices = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<CounterServices>();
             GameObject gameObject = this.gameObject;
             Button button = gameObject.GetComponent<Button>();
@@ -24,7 +31,7 @@ namespace Assets.Appneuron.Project.ChurnBlockerModule.Components.BuyingDataCompo
             {
                 string levelName = counterServices.SceneName;
                 float inMinutes = counterServices.levelBaseGameTimer;
-                advEventWorkflows.SendAdvEventData(this.gameObject.tag,
+                _buyingEventDataManager.SendAdvEventData(this.gameObject.tag,
                     levelName,
                     inMinutes);
             });

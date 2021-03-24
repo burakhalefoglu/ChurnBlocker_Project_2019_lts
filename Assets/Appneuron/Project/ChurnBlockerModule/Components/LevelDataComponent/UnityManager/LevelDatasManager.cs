@@ -1,9 +1,10 @@
-﻿using Assets.Appneuron.CoreServices.IdConfigServices;
+﻿using Assets.Appneuron.CoreServices.CryptoServices.Absrtact;
+using Assets.Appneuron.CoreServices.IdConfigServices;
+using Assets.Appneuron.CoreServices.RestClientServices.Abstract;
 using Assets.Appneuron.Project.ChurnBlockerModule.ChildModules.DataVisualizationModule.Services.CounterServices;
 using Assets.Appneuron.Project.ChurnBlockerModule.Components.LevelDataComponent.DataAccess;
 using Assets.Appneuron.Project.ChurnBlockerModule.Components.LevelDataComponent.Datamodel;
 using Assets.Appneuron.Project.ChurnBlockerModule.Services.ConfigServices;
-using Assets.Appneuron.UnityWorkflowBase;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -15,11 +16,35 @@ namespace Assets.Appneuron.Project.ChurnBlockerModule.Components.LevelDataCompon
     public class LevelDatasManager : MonoBehaviour
     {
 
+       private readonly IEveryLoginLevelDal _everyLoginLevelDal;
+        private readonly ILevelBaseDieDal _levelBaseDieDal;
+        private readonly IRestClientServices _restClientServices;
+        private readonly ICryptoServices _cryptoServices;
+        public LevelDatasManager(IEveryLoginLevelDal everyLoginLevelDal,
+        ILevelBaseDieDal levelBaseDieDal,
+        IRestClientServices restClientServices,
+        ICryptoServices cryptoServices
+)
+        {
+            _everyLoginLevelDal = everyLoginLevelDal;
+            _levelBaseDieDal = levelBaseDieDal;
+            _restClientServices = restClientServices;
+            _cryptoServices = cryptoServices;
+        }
+
+
+
         string playerId;
         string projectId;
         string CustomerId;
         string WebApilink;
         CounterServices counterServices;
+
+
+        public LevelDatasManager()
+        {
+
+        }
 
         void Start()
         {
@@ -80,20 +105,7 @@ namespace Assets.Appneuron.Project.ChurnBlockerModule.Components.LevelDataCompon
 
             string filepath = ComponentsConfigServices.LevelBaseDieDataPath;
 
-            BaseVisualizationDataManager<LevelBaseDieDataModel> baseDataWorkflow =
-               new BaseVisualizationDataManager<LevelBaseDieDataModel>();
-
-            LevelBaseDieDataModel dataModel = new LevelBaseDieDataModel();
-            LevelBaseDieDAL dataAccess = new LevelBaseDieDAL();
-
-            string statuseCode = baseDataWorkflow.SendData(WebApilink, dataModel);
-
-            if (statuseCode == "Created")
-            {
-                return;
-            }
-            baseDataWorkflow.SaveData(filepath, new LevelBaseDieDataModel
-            {
+            LevelBaseDieDataModel dataModel = new LevelBaseDieDataModel {
 
                 _id = playerId,
                 ProjectID = projectId,
@@ -105,26 +117,31 @@ namespace Assets.Appneuron.Project.ChurnBlockerModule.Components.LevelDataCompon
                 DiyingLocationY = transform.y,
                 DiyingLocationZ = transform.z
 
-            }, dataAccess);
+
+            };
+
+            string statuseCode = _restClientServices.Post(WebApilink, dataModel);
+
+            if (statuseCode == "Created")
+            {
+                return;
+            }
+            string fileName = _cryptoServices.GenerateStringName(6);
+            _levelBaseDieDal.Insert(filepath + fileName, dataModel);
+            
         }
 
         void CheckLevelbaseDieAndSend()
         {
-            BaseVisualizationDataManager<LevelBaseDieDataModel> baseDataWorkflow =
-           new BaseVisualizationDataManager<LevelBaseDieDataModel>();
-
-            LevelBaseDieDataModel dataModel = new LevelBaseDieDataModel();
-            LevelBaseDieDAL modelDal = new LevelBaseDieDAL();
-
-
+          
             List<string> FolderList = ComponentsConfigServices.GetVisualDataFilesName(ComponentsConfigServices.SaveTypePath.LevelBaseDieDataModel);
-            foreach (var item in FolderList)
+            foreach (var fileName in FolderList)
             {
-                dataModel = modelDal.Select(ComponentsConfigServices.LevelBaseDieDataPath + item, dataModel);
-                string statuseCode = baseDataWorkflow.SendData(WebApilink, dataModel);
+                var dataModel = _levelBaseDieDal.Select(ComponentsConfigServices.LevelBaseDieDataPath + fileName);
+                string statuseCode = _restClientServices.Post(WebApilink, dataModel);
                 if (statuseCode == "Created")
                 {
-                    modelDal.Delete(ComponentsConfigServices.LevelBaseDieDataPath + item);
+                    _levelBaseDieDal.Delete(ComponentsConfigServices.LevelBaseDieDataPath + fileName);
                 }
             }
         }
@@ -138,23 +155,7 @@ namespace Assets.Appneuron.Project.ChurnBlockerModule.Components.LevelDataCompon
         {
             string filepath = ComponentsConfigServices.EveryLoginLevelDatasPath;
 
-
-
-
-            BaseVisualizationDataManager<EveryLoginLevelDatasModel> baseDataWorkflow =
-                new BaseVisualizationDataManager<EveryLoginLevelDatasModel>();
-
-            EveryLoginLevelDatasModel dataModel = new EveryLoginLevelDatasModel();
-            EveryLoginLevelDAL dataAccess = new EveryLoginLevelDAL();
-
-            string statuseCode = baseDataWorkflow.SendData(WebApilink, dataModel);
-
-            if (statuseCode == "Created")
-            {
-                return;
-            }
-            baseDataWorkflow.SaveData(filepath, new EveryLoginLevelDatasModel
-            {
+            EveryLoginLevelDatasModel dataModel = new EveryLoginLevelDatasModel {
 
                 _id = playerId,
                 ProjectID = projectId,
@@ -166,27 +167,30 @@ namespace Assets.Appneuron.Project.ChurnBlockerModule.Components.LevelDataCompon
                 IsDead = isDead,
                 TotalPowerUsage = totalPowerUsage
 
-            }, dataAccess);
+            };
+
+            string statuseCode =_restClientServices.Post(WebApilink, dataModel);
+
+            if (statuseCode == "Created")
+            {
+                return;
+            }
+            string fileName = _cryptoServices.GenerateStringName(6);
+            _everyLoginLevelDal.Insert(filepath + fileName, dataModel);
         }
 
 
         void CheckEveryLoginLevelDatasAndSend()
         {
-            BaseVisualizationDataManager<EveryLoginLevelDatasModel> baseDataWorkflow =
-            new BaseVisualizationDataManager<EveryLoginLevelDatasModel>();
-
-            EveryLoginLevelDatasModel dataModel = new EveryLoginLevelDatasModel();
-            EveryLoginLevelDAL modelDal = new EveryLoginLevelDAL();
-
 
             List<string> FolderList = ComponentsConfigServices.GetVisualDataFilesName(ComponentsConfigServices.SaveTypePath.EveryLoginLevelDatasModel);
-            foreach (var item in FolderList)
+            foreach (var fileName in FolderList)
             {
-                dataModel = modelDal.Select(ComponentsConfigServices.EveryLoginLevelDatasPath + item, dataModel);
-                string statuseCode = baseDataWorkflow.SendData(WebApilink, dataModel);
+               var dataModel = _everyLoginLevelDal.Select(ComponentsConfigServices.EveryLoginLevelDatasPath + fileName);
+                string statuseCode =_restClientServices.Post(WebApilink, dataModel);
                 if (statuseCode == "Created")
                 {
-                    modelDal.Delete(ComponentsConfigServices.EveryLoginLevelDatasPath + item);
+                    _everyLoginLevelDal.Delete(ComponentsConfigServices.EveryLoginLevelDatasPath + fileName);
                 }
             }
 

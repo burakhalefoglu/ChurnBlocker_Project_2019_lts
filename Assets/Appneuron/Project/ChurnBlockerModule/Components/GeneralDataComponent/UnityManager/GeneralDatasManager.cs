@@ -3,7 +3,6 @@ using Assets.Appneuron.CoreServices.RestClientServices.Abstract;
 using Assets.Appneuron.Project.ChurnBlockerModule.Components.GeneralDataComponent.DataAccess;
 using Assets.Appneuron.Project.ChurnBlockerModule.Components.GeneralDataComponent.DataModel;
 using Assets.Appneuron.Project.ChurnBlockerModule.Services.ConfigServices;
-using Ninject;
 using System.Collections;
 using System.IO;
 using System.Reflection;
@@ -13,6 +12,17 @@ namespace Assets.Appneuron.Project.ChurnBlockerModule.Components.GeneralDataComp
 {
     public class GeneralDatasManager : MonoBehaviour
     {
+        private readonly IRestClientServices _restClientServices;
+        private readonly ISuccessSaveInfoDal _successSaveInfoDal;
+        private readonly IGeneralDataDal _generalDataDal;
+        public GeneralDatasManager(IRestClientServices restClientServices,
+            ISuccessSaveInfoDal successSaveInfoDal,
+            IGeneralDataDal generalDataDal)
+        {
+            _restClientServices = restClientServices;
+            _successSaveInfoDal = successSaveInfoDal;
+            _generalDataDal = generalDataDal;
+        }
 
         void Start()
         {
@@ -40,12 +50,8 @@ namespace Assets.Appneuron.Project.ChurnBlockerModule.Components.GeneralDataComp
             int GameType = ComponentsConfigServices.GameType;
             int GraphStyle = ComponentsConfigServices.GraphStyle;
 
-            using (var kernel = new StandardKernel())
-            {
-                IRestClientServices http;
-                kernel.Load(Assembly.GetExecutingAssembly());
-                http = kernel.Get<IRestClientServices>();
-                string statuseCode = http.Post(WebApilink, new GeneralDataModel
+            
+                string statuseCode = _restClientServices.Post(WebApilink, new GeneralDataModel
                 {
                     _id = playerId,
                     ProjectID = projectId,
@@ -62,7 +68,7 @@ namespace Assets.Appneuron.Project.ChurnBlockerModule.Components.GeneralDataComp
                     return;
                 }
                 Debug.Log(" başarısız oldu : " + statuseCode);
-            }
+            
 
         }
 
@@ -72,8 +78,7 @@ namespace Assets.Appneuron.Project.ChurnBlockerModule.Components.GeneralDataComp
             string filepath = ComponentsConfigServices.GeneralDataPath;
             string fileName = "GeneralDataSaved";
 
-            SuccessSaveInfoDAL successSaveInfo = new SuccessSaveInfoDAL();
-            successSaveInfo.Insert(filepath + fileName, new SuccessSaveInfo
+            _successSaveInfoDal.Insert(filepath + fileName, new SuccessSaveInfo
             {
                 IsSaved = true
             });

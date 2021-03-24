@@ -1,10 +1,11 @@
 ﻿
+using Assets.Appneuron.CoreServices.CryptoServices.Absrtact;
 using Assets.Appneuron.CoreServices.IdConfigServices;
+using Assets.Appneuron.CoreServices.RestClientServices.Abstract;
 using Assets.Appneuron.Project.ChurnBlockerModule.ChildModules.DataVisualizationModule.Services.CounterServices;
-using Assets.Appneuron.Project.ChurnBlockerModule.Components.SessionComponent.DataAccess;
 using Assets.Appneuron.Project.ChurnBlockerModule.Components.SessionComponent.DataModel;
+using Assets.Appneuron.Project.ChurnBlockerModule.Components.SessionDataComponent.DataAccess;
 using Assets.Appneuron.Project.ChurnBlockerModule.Services.ConfigServices;
-using Assets.Appneuron.UnityWorkflowBase;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -15,6 +16,27 @@ namespace Assets.Appneuron.Project.ChurnBlockerModule.Components.SessionComponen
 {
     public class SessionDatasManager : MonoBehaviour
     {
+        private readonly IDailySessionDal _dailySessionDal;
+        private readonly IGameSessionEveryLoginDal _gameSessionEveryLoginDal;
+        private readonly ILevelBaseSessionDal _levelBaseSessionDal;
+        private readonly ICryptoServices _cryptoServices;
+        private readonly IRestClientServices _restClientServices;
+
+        public SessionDatasManager(IDailySessionDal dailySessionDal,
+            IGameSessionEveryLoginDal gameSessionEveryLoginDal,
+            ILevelBaseSessionDal levelBaseSessionDal,
+            ICryptoServices cryptoServices,
+            IRestClientServices restClientServices)
+        {
+            _dailySessionDal = dailySessionDal;
+            _gameSessionEveryLoginDal = gameSessionEveryLoginDal;
+            _levelBaseSessionDal = levelBaseSessionDal;
+            _cryptoServices = cryptoServices;
+            _restClientServices = restClientServices;
+        }
+
+
+
         string playerId;
         string projectId;
         string CustomerId;
@@ -75,6 +97,9 @@ namespace Assets.Appneuron.Project.ChurnBlockerModule.Components.SessionComponen
             SceneManager.sceneLoaded -= OnSceneLoaded;
         }
 
+
+
+
         void SendDailySessionData()
         {
             string filepath = ComponentsConfigServices.DailySessionDataPath;
@@ -82,36 +107,25 @@ namespace Assets.Appneuron.Project.ChurnBlockerModule.Components.SessionComponen
             List<string> FolderList = ComponentsConfigServices.GetVisualDataFilesName
                 (ComponentsConfigServices.SaveTypePath.DailySessionDataModel);
 
-            BaseVisualizationDataManager<DailySessionDataModel> baseDataWorkflow =
-                   new BaseVisualizationDataManager<DailySessionDataModel>();
-
             if (FolderList.Count > 0)
             {
                 foreach (string fileName in FolderList)
                 {
-                    DailySessionDataModel dailySessionModel = baseDataWorkflow.GetData
-                        (filepath,
-                        fileName,
-                       new DailySessionDataModel(),
-                       new DailySessionDAL());
-
+                    var dailySessionModel = _dailySessionDal.Select(filepath + fileName);
                     DateTime moment = DateTime.Now;
                     bool IsToday = dailySessionModel.TodayTime.Day == moment.Day;
                     if (IsToday)
                     {
                         dailySessionModel.TotalSessionTime += counterServices.TimerForGeneralSession;
                         dailySessionModel.SessionFrequency += 1;
-                        baseDataWorkflow.SendData(WebApilink, dailySessionModel);
-                        baseDataWorkflow.DeleteData(filepath, fileName, new DailySessionDAL());
-                        baseDataWorkflow.SaveData(filepath, dailySessionModel, new DailySessionDAL());
+                        _restClientServices.Post(WebApilink, dailySessionModel);
+                       _dailySessionDal.Delete(filepath + fileName);
+                        _dailySessionDal.Insert(filepath + fileName, dailySessionModel);
                     }
                     else
                     {
-                        baseDataWorkflow.SendData(WebApilink, dailySessionModel);
-                        baseDataWorkflow.DeleteData
-                            (filepath,
-                            fileName,
-                            new DailySessionDAL());
+                        _restClientServices.Post(WebApilink, dailySessionModel);
+                        _dailySessionDal.Delete(filepath + fileName);
                     }
 
 
@@ -128,12 +142,10 @@ namespace Assets.Appneuron.Project.ChurnBlockerModule.Components.SessionComponen
                     TotalSessionTime = counterServices.TimerForGeneralSession,
                     TodayTime = DateTime.Now
                 };
-                baseDataWorkflow.SendData(WebApilink, dailySessionDataModel);
+                _restClientServices.Post(WebApilink, dailySessionDataModel);
+                string fileName = _cryptoServices.GenerateStringName(6);
+                _dailySessionDal.Insert(filepath + fileName, dailySessionDataModel);
 
-                baseDataWorkflow.SaveData
-                    (filepath,
-                    dailySessionDataModel,
-                    new DailySessionDAL());
             }
 
         }
@@ -145,26 +157,10 @@ namespace Assets.Appneuron.Project.ChurnBlockerModule.Components.SessionComponen
         {
 
             string filepath = ComponentsConfigServices.LevelBaseSessionDataPath;
-
-
-
             DateTime levelBaseGameSessionFinish = levelBaseGameSessionStart.AddSeconds(sessionSeconds);
             float minutes = sessionSeconds / 60;
 
-            BaseVisualizationDataManager<LevelBaseSessionDataModel> baseDataWorkflow =
-               new BaseVisualizationDataManager<LevelBaseSessionDataModel>();
-
-            LevelBaseSessionDataModel dataModel = new LevelBaseSessionDataModel();
-            LevelBaseSessionDAL dataAccess = new LevelBaseSessionDAL();
-
-            string statuseCode = baseDataWorkflow.SendData(WebApilink, dataModel);
-
-            if (statuseCode == "Created")
-            {
-                return;
-            }
-            baseDataWorkflow.SaveData(filepath, new LevelBaseSessionDataModel
-            {
+            LevelBaseSessionDataModel dataModel = new LevelBaseSessionDataModel {
 
                 _id = playerId,
                 ProjectID = projectId,
@@ -174,34 +170,27 @@ namespace Assets.Appneuron.Project.ChurnBlockerModule.Components.SessionComponen
                 SessionStartTime = levelBaseGameSessionStart,
                 SessionFinishTime = levelBaseGameSessionFinish,
                 SessionTimeMinute = minutes
+            };
 
-            }, dataAccess);
-        }
-
-        void SendGeneralSessionData()
-        {
-            DateTime gameSessionEveryLoginFinish = counterServices.gameSessionEveryLoginStart.AddSeconds(counterServices.TimerForGeneralSession);
-            float minutes = counterServices.TimerForGeneralSession / 60;
-
-            string filepath = ComponentsConfigServices.GameSessionEveryLoginDataPath;
-
-
-
-
-            BaseVisualizationDataManager<GameSessionEveryLoginDataModel> baseDataWorkflow =
-                new BaseVisualizationDataManager<GameSessionEveryLoginDataModel>();
-
-            GameSessionEveryLoginDataModel dataModel = new GameSessionEveryLoginDataModel();
-            GameSessionEveryLoginDAL dataAccess = new GameSessionEveryLoginDAL();
-
-            string statuseCode = baseDataWorkflow.SendData(WebApilink, dataModel);
+            string statuseCode =_restClientServices.Post(WebApilink, dataModel);
 
             if (statuseCode == "Created")
             {
                 return;
             }
-            baseDataWorkflow.SaveData(filepath, new GameSessionEveryLoginDataModel
-            {
+            string fileName = _cryptoServices.GenerateStringName(6);
+            _levelBaseSessionDal.Insert(filepath + fileName, dataModel);
+        }
+
+
+
+        void SendGeneralSessionData()
+        {
+            DateTime gameSessionEveryLoginFinish = counterServices.gameSessionEveryLoginStart.AddSeconds(counterServices.TimerForGeneralSession);
+            float minutes = counterServices.TimerForGeneralSession / 60;
+            string filepath = ComponentsConfigServices.GameSessionEveryLoginDataPath;
+
+            GameSessionEveryLoginDataModel dataModel = new GameSessionEveryLoginDataModel {
 
                 _id = playerId,
                 ProjectID = projectId,
@@ -210,27 +199,30 @@ namespace Assets.Appneuron.Project.ChurnBlockerModule.Components.SessionComponen
                 SessionFinishTime = gameSessionEveryLoginFinish,
                 SessionTimeMinute = minutes
 
-            }, dataAccess);
+            };
+
+            string statuseCode =_restClientServices.Post(WebApilink, dataModel);
+
+            if (statuseCode == "Created")
+            {
+                return;
+            }
+            string fileName = _cryptoServices.GenerateStringName(6);
+            _gameSessionEveryLoginDal.Insert(filepath + fileName, dataModel);
         }
 
 
         void CheckGeneralDataAndSend()
         {
-            BaseVisualizationDataManager<GameSessionEveryLoginDataModel> baseDataWorkflow =
-            new BaseVisualizationDataManager<GameSessionEveryLoginDataModel>();
-
-            GameSessionEveryLoginDataModel dataModel = new GameSessionEveryLoginDataModel();
-            GameSessionEveryLoginDAL modelDal = new GameSessionEveryLoginDAL();
-
-
+            
             List<string> FolderList = ComponentsConfigServices.GetVisualDataFilesName(ComponentsConfigServices.SaveTypePath.GameSessionEveryLoginDataModel);
-            foreach (var item in FolderList)
+            foreach (var fileName in FolderList)
             {
-                dataModel = modelDal.Select(ComponentsConfigServices.GameSessionEveryLoginDataPath + item, dataModel);
-                string statuseCode = baseDataWorkflow.SendData(WebApilink, dataModel);
+                var dataModel = _gameSessionEveryLoginDal.Select(ComponentsConfigServices.GameSessionEveryLoginDataPath + fileName);
+                string statuseCode =_restClientServices.Post(WebApilink, dataModel);
                 if (statuseCode == "Created")
                 {
-                    modelDal.Delete(ComponentsConfigServices.GameSessionEveryLoginDataPath + item);
+                    _gameSessionEveryLoginDal.Delete(ComponentsConfigServices.GameSessionEveryLoginDataPath + fileName);
                 }
             }
 
@@ -239,21 +231,15 @@ namespace Assets.Appneuron.Project.ChurnBlockerModule.Components.SessionComponen
 
         void CheckLevelBaseSessionDataAndSend()
         {
-            BaseVisualizationDataManager<LevelBaseSessionDataModel> baseDataWorkflow =
-            new BaseVisualizationDataManager<LevelBaseSessionDataModel>();
-
-            LevelBaseSessionDataModel dataModel = new LevelBaseSessionDataModel();
-            LevelBaseSessionDAL modelDal = new LevelBaseSessionDAL();
-
-
+            
             List<string> FolderList = ComponentsConfigServices.GetVisualDataFilesName(ComponentsConfigServices.SaveTypePath.LevelBaseSessionDataModel);
-            foreach (var item in FolderList)
+            foreach (var fileName in FolderList)
             {
-                dataModel = modelDal.Select(ComponentsConfigServices.LevelBaseSessionDataPath + item, dataModel);
-                string statuseCode = baseDataWorkflow.SendData(WebApilink, dataModel);
+                var dataModel = _levelBaseSessionDal.Select(ComponentsConfigServices.LevelBaseSessionDataPath + fileName);
+                string statuseCode =_restClientServices.Post(WebApilink, dataModel);
                 if (statuseCode == "Created")
                 {
-                    modelDal.Delete(ComponentsConfigServices.LevelBaseSessionDataPath + item);
+                    _levelBaseSessionDal.Delete(ComponentsConfigServices.LevelBaseSessionDataPath + fileName);
                 }
             }
 

@@ -1,5 +1,5 @@
 ﻿using Assets.Appneuron.Project.ChurnBlockerModule.ChildModules.DataVisualizationModule.Services.CounterServices;
-using Assets.Appneuron.Project.ChurnBlockerModule.Components.AdvDataComponent.UnityWorkflow;
+using Assets.Appneuron.Project.ChurnBlockerModule.Components.AdvDataComponent.UnityManager;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,11 +9,19 @@ namespace Assets.Appneuron.Project.ChurnBlockerModule.Components.AdvDataComponen
 {
     public class AppneuronAdvListener : MonoBehaviour
     {
-        AdvEventManager advEventWorkflows = new AdvEventManager();
+       private IAdvEventUnityManager _advEventWorkflows;
+
+        public AppneuronAdvListener(IAdvEventUnityManager advEventWorkflows)
+        {
+            _advEventWorkflows = advEventWorkflows;
+        }
+
         CounterServices counterServices;
+        
         void Start()
         {
-            advEventWorkflows.CheckAdvFileAndSendData();
+
+            _advEventWorkflows.CheckAdvFileAndSendData();
             counterServices = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<CounterServices>();
             GameObject gameObject = this.gameObject;
             Button button = gameObject.GetComponent<Button>();
@@ -21,7 +29,7 @@ namespace Assets.Appneuron.Project.ChurnBlockerModule.Components.AdvDataComponen
             {
                 string levelName = counterServices.SceneName;
                 float inMinutes = counterServices.levelBaseGameTimer;
-                advEventWorkflows.SendAdvEventData(this.gameObject.tag,
+                _advEventWorkflows.SendAdvEventData(this.gameObject.tag,
                     levelName,
                     inMinutes);
             });
