@@ -6,6 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Appneuron/Project/ChurnBlockerModule/ChildModules/DataVisualizationModule/Scene/Cb_DemoScene.unity
+    path: Assets/Appneuron/ProjectModules/ChurnBlockerModule/ChildModules/DataVisualizationModule/Scene/Cb_DemoScene.unity
     guid: c1890fc155f93b4469e31b910b88c0d1
   m_configObjects: {}
