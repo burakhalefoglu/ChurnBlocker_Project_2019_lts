@@ -8,7 +8,8 @@ using UnityEngine;
 using Ninject;
 using Assets.Appneuron.Core.CoreServices.RestClientServices.Abstract;
 using Assets.Appneuron.Core.UnityManager;
-using Assets.Appneuron.ProjectModules.ChurnBlockerModule.ChurnBlockerServices.ConfigServices;
+using Assets.Appneuron.ProjectModules.ChurnBlockerModule.ChurnBlockerServices.SettingServices;
+using Appneuron.Services;
 
 namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.GeneralDataComponent.UnityManager
 {
@@ -18,7 +19,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.GeneralD
         private IRestClientServices _restClientServices;
         private ISuccessSaveInfoDal _successSaveInfoDal;
         private IGeneralDataDal _generalDataDal;
-
+        private SettingServices settingService;
 
         private IdUnityManager idUnityManager;
 
@@ -36,10 +37,10 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.GeneralD
 
         void Start()
         {
-            StartCoroutine(LateStart(1));
+            
             idUnityManager = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<IdUnityManager>();
-
-
+            settingService = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<SettingServices>();
+            StartCoroutine(LateStart(1));
         }
 
         IEnumerator LateStart(float waitTime)
@@ -53,23 +54,17 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.GeneralD
 
         void AddGeneralDatas()
         {
-            string playerId = idUnityManager.GetPlayerID();
-            string projectId = ChurnBlockerConfigServices.GetProjectID();
-            string CustomerId = ChurnBlockerConfigServices.GetCustomerID();
-            string WebApilink = ChurnBlockerConfigServices.GetWebApiLink();
 
-            int GameType = ComponentsConfigServices.GameType;
-            int GraphStyle = ComponentsConfigServices.GraphStyle;
-
+            string WebApilink = ChurnBlockerConfigService.GetWebApiLink();
 
             var result = _restClientServices.Post(WebApilink, new GeneralDataModel
             {
-                _id = playerId,
-                ProjectID = projectId,
-                CustomerID = CustomerId,
-                GameType = GameType,
+                _id = idUnityManager.GetPlayerID(),
+                ProjectID = ChurnBlockerConfigService.GetProjectID(),
+                CustomerID = ChurnBlockerConfigService.GetCustomerID(),
+                GameType = settingService.GetGameType(),
                 PlayersDifficultylevel = 0,
-                GraphStyle = GraphStyle
+                GraphStyle = settingService.GetGraphStyle()
             });
 
             if (result.Success)
@@ -81,16 +76,15 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.GeneralD
             }
             Debug.Log(" başarısız oldu : " + result.StatuseCode);
 
-
         }
 
 
         void SavePlayerSuccessSaveGeneralDataInfo()
         {
-            string filepath = ComponentsConfigServices.GeneralDataPath;
             string fileName = "GeneralDataSaved";
+            string filepath = ComponentsConfigService.GeneralDataPath + fileName;
 
-            _successSaveInfoDal.Insert(filepath + fileName, new SuccessSaveInfo
+            _successSaveInfoDal.Insert(filepath, new SuccessSaveInfo
             {
                 IsSaved = true
             });
@@ -99,7 +93,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.GeneralD
 
         bool checkFileExist()
         {
-            string filepath = ComponentsConfigServices.GeneralDataPath;
+            string filepath = ComponentsConfigService.GeneralDataPath;
             string fileName = "GeneralDataSaved";
 
             string savePath = filepath + fileName + ".data";

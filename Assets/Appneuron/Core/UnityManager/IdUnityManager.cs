@@ -32,7 +32,7 @@ namespace Assets.Appneuron.Core.UnityManager
             CreateFileDirectories();
             SaveIdOnSaveFolder();
         }
-        void SaveIdOnSaveFolder()
+        private void SaveIdOnSaveFolder()
         {
             string filepath = CustomerIdPath;
             string fileName = "_id";
@@ -57,7 +57,7 @@ namespace Assets.Appneuron.Core.UnityManager
             return customerIdModel._id;
         }
 
-        string GenerateId()
+        private string GenerateId()
         {
             var id = _cryptoServices.GetRandomHexNumber(32);
             return id;

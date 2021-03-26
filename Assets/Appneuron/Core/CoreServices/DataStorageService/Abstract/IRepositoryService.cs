@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 
-namespace Assets.Appneuron.Core.CoreServices.SaveDataServices.Abstract
+namespace Assets.Appneuron.Core.CoreServices.DataStorageService.Abstract
 {
     public interface IRepositoryService<T>
     {

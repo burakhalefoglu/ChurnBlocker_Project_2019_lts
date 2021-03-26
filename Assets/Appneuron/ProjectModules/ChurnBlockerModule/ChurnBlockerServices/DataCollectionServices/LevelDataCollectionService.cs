@@ -17,7 +17,8 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.ChurnBlockerService
             Transform chartransform)
         {
 
-            LevelDatasManager levelDatasManager = GameObject.FindGameObjectWithTag("ChurnBlocker").GetComponent<LevelDatasManager>();
+            LevelDatasManager levelDatasManager = GameObject.FindGameObjectWithTag("ChurnBlocker")
+                .GetComponent<LevelDatasManager>();
             levelDatasManager.SendData(chartransform.position.x,
                 chartransform.position.y,
                 chartransform.position.z,

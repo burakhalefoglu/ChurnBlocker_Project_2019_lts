@@ -11,7 +11,8 @@ using Assets.Appneuron.Core.CoreServices.CryptoServices.Absrtact;
 using Assets.Appneuron.Core.CoreServices.RestClientServices.Abstract;
 using Assets.Appneuron.Core.UnityManager;
 using Assets.Appneuron.ProjectModules.ChurnBlockerModule.ChurnBlockerServices.CounterServices;
-using Assets.Appneuron.ProjectModules.ChurnBlockerModule.ChurnBlockerServices.ConfigServices;
+using Appneuron;
+using Appneuron.Services;
 
 namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.SessionComponent.UnityManager
 {
@@ -23,7 +24,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.SessionC
         private ILevelBaseSessionDal _levelBaseSessionDal;
         private IRestClientServices _restClientServices;
         private ICryptoServices _cryptoServices;
-         
+
 
         private string playerId;
         private string projectId;
@@ -33,6 +34,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.SessionC
         private string levelName;
 
         private CounterServices counterServices;
+        private DifficultySingletonModel difficultySingletonModel;
 
         private void Awake()
         {
@@ -48,20 +50,21 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.SessionC
             }
         }
 
-        void Start()
+        private void Start()
         {
 
             IdUnityManager idUnityManager = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<IdUnityManager>();
             counterServices = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<CounterServices>();
+            difficultySingletonModel = DifficultySingletonModel.Instance;
 
             playerId = idUnityManager.GetPlayerID();
-            projectId = ChurnBlockerConfigServices.GetProjectID();
-            customerId = ChurnBlockerConfigServices.GetCustomerID();
-            webApilink = ChurnBlockerConfigServices.GetWebApiLink();
+            projectId = ChurnBlockerConfigService.GetProjectID();
+            customerId = ChurnBlockerConfigService.GetCustomerID();
+            webApilink = ChurnBlockerConfigService.GetWebApiLink();
 
             StartCoroutine(LateStart(1));
         }
-        IEnumerator LateStart(float waitTime)
+        private IEnumerator LateStart(float waitTime)
         {
             yield return new WaitForSeconds(waitTime);
             CheckGeneralDataAndSend();
@@ -75,12 +78,12 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.SessionC
             SendDailySessionData();
         }
 
-        void OnEnable()
+        private void OnEnable()
         {
             SceneManager.sceneLoaded += OnSceneLoaded;
         }
 
-        void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
             if (isNewLevel)
             {
@@ -95,7 +98,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.SessionC
             }
         }
 
-        void OnDisable()
+        private void OnDisable()
         {
             Debug.Log("OnDisable");
             SceneManager.sceneLoaded -= OnSceneLoaded;
@@ -104,12 +107,12 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.SessionC
 
 
 
-        void SendDailySessionData()
+        private void SendDailySessionData()
         {
-            string filepath = ComponentsConfigServices.DailySessionDataPath;
+            string filepath = ComponentsConfigService.DailySessionDataPath;
 
-            List<string> FolderList = ComponentsConfigServices.GetVisualDataFilesName
-                (ComponentsConfigServices.SaveTypePath.DailySessionDataModel);
+            List<string> FolderList = ComponentsConfigService.GetVisualDataFilesName
+                (ComponentsConfigService.SaveTypePath.DailySessionDataModel);
 
             if (FolderList.Count > 0)
             {
@@ -128,8 +131,9 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.SessionC
                     }
                     else
                     {
-                        _restClientServices.Post(webApilink, dailySessionModel);
-                        _dailySessionDal.Delete(filepath + fileName);
+                        var result = _restClientServices.Post(webApilink, dailySessionModel);
+                        if (result.Success)
+                            _dailySessionDal.Delete(filepath + fileName);
                     }
 
 
@@ -155,12 +159,12 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.SessionC
         }
 
 
-        void SendLevelbaseSessionData(float sessionSeconds,
+        private void SendLevelbaseSessionData(float sessionSeconds,
             string levelName,
             DateTime levelBaseGameSessionStart)
         {
 
-            string filepath = ComponentsConfigServices.LevelBaseSessionDataPath;
+            string filepath = ComponentsConfigService.LevelBaseSessionDataPath;
             DateTime levelBaseGameSessionFinish = levelBaseGameSessionStart.AddSeconds(sessionSeconds);
             float minutes = sessionSeconds / 60;
 
@@ -171,7 +175,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.SessionC
                 ProjectID = projectId,
                 CustomerID = customerId,
                 levelName = levelName,
-                DifficultyLevel = ComponentsConfigServices.CurrentDifficultyLevel,
+                DifficultyLevel = difficultySingletonModel.CurrentDifficultyLevel,
                 SessionStartTime = levelBaseGameSessionStart,
                 SessionFinishTime = levelBaseGameSessionFinish,
                 SessionTimeMinute = minutes
@@ -189,11 +193,11 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.SessionC
 
 
 
-        void SendGeneralSessionData()
+        private void SendGeneralSessionData()
         {
             DateTime gameSessionEveryLoginFinish = counterServices.GameSessionEveryLoginStart.AddSeconds(counterServices.TimerForGeneralSession);
             float minutes = counterServices.TimerForGeneralSession / 60;
-            string filepath = ComponentsConfigServices.GameSessionEveryLoginDataPath;
+            string filepath = ComponentsConfigService.GameSessionEveryLoginDataPath;
 
             GameSessionEveryLoginDataModel dataModel = new GameSessionEveryLoginDataModel
             {
@@ -218,34 +222,34 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.SessionC
         }
 
 
-        void CheckGeneralDataAndSend()
+        private void CheckGeneralDataAndSend()
         {
 
-            List<string> FolderList = ComponentsConfigServices.GetVisualDataFilesName(ComponentsConfigServices.SaveTypePath.GameSessionEveryLoginDataModel);
+            List<string> FolderList = ComponentsConfigService.GetVisualDataFilesName(ComponentsConfigService.SaveTypePath.GameSessionEveryLoginDataModel);
             foreach (var fileName in FolderList)
             {
-                var dataModel = _gameSessionEveryLoginDal.Select(ComponentsConfigServices.GameSessionEveryLoginDataPath + fileName);
+                var dataModel = _gameSessionEveryLoginDal.Select(ComponentsConfigService.GameSessionEveryLoginDataPath + fileName);
                 var result = _restClientServices.Post(webApilink, dataModel);
                 if (result.Success)
                 {
-                    _gameSessionEveryLoginDal.Delete(ComponentsConfigServices.GameSessionEveryLoginDataPath + fileName);
+                    _gameSessionEveryLoginDal.Delete(ComponentsConfigService.GameSessionEveryLoginDataPath + fileName);
                 }
             }
 
 
         }
 
-        void CheckLevelBaseSessionDataAndSend()
+        private void CheckLevelBaseSessionDataAndSend()
         {
 
-            List<string> FolderList = ComponentsConfigServices.GetVisualDataFilesName(ComponentsConfigServices.SaveTypePath.LevelBaseSessionDataModel);
+            List<string> FolderList = ComponentsConfigService.GetVisualDataFilesName(ComponentsConfigService.SaveTypePath.LevelBaseSessionDataModel);
             foreach (var fileName in FolderList)
             {
-                var dataModel = _levelBaseSessionDal.Select(ComponentsConfigServices.LevelBaseSessionDataPath + fileName);
+                var dataModel = _levelBaseSessionDal.Select(ComponentsConfigService.LevelBaseSessionDataPath + fileName);
                 var result = _restClientServices.Post(webApilink, dataModel);
                 if (result.Success)
                 {
-                    _levelBaseSessionDal.Delete(ComponentsConfigServices.LevelBaseSessionDataPath + fileName);
+                    _levelBaseSessionDal.Delete(ComponentsConfigService.LevelBaseSessionDataPath + fileName);
                 }
             }
 

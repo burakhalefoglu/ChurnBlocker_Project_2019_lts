@@ -2,10 +2,10 @@
 using UnityEngine;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Collections.Generic;
-using Assets.Appneuron.Core.CoreServices.SaveDataServices.Abstract;
 using Assets.Appneuron.Core.DataModelBase.Abstract;
+using Assets.Appneuron.Core.CoreServices.DataStorageService.Abstract;
 
-namespace Assets.Appneuron.Core.CoreServices.SaveDataServices.Concrete.BinaryDataBase
+namespace Assets.Appneuron.Core.CoreServices.DataStorageService.Concrete.BinaryType
 {
     public class BinaryTypeRepositoryBase<T> : IRepositoryService<T>
         where T : class, IEntity, new()

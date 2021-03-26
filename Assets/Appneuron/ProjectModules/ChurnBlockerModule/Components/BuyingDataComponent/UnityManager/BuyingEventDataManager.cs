@@ -11,7 +11,8 @@ using System.Reflection;
 using Assets.Appneuron.Core.CoreServices.CryptoServices.Absrtact;
 using Assets.Appneuron.Core.CoreServices.RestClientServices.Abstract;
 using Assets.Appneuron.Core.UnityManager;
-using Assets.Appneuron.ProjectModules.ChurnBlockerModule.ChurnBlockerServices.ConfigServices;
+using Appneuron;
+using Appneuron.Services;
 
 namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.BuyingDataComponent.UnityManager
 {
@@ -23,7 +24,8 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.BuyingDa
         private ICryptoServices _cryptoServices;
 
 
-        IdUnityManager ıdService;
+        private IdUnityManager idUnityManager;
+        private DifficultySingletonModel difficultySingletonModel;
 
         private void Awake()
         {
@@ -39,23 +41,28 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.BuyingDa
 
         private void Start()
         {
-            ıdService = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<IdUnityManager>();
+            idUnityManager = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<IdUnityManager>();
+            difficultySingletonModel = DifficultySingletonModel.Instance;
 
         }
+
         public void CheckAdvFileAndSendData()
         {
 
 
-            string WebApilink = ChurnBlockerConfigServices.GetWebApiLink();
+            string WebApilink = ChurnBlockerConfigService.GetWebApiLink();
 
-            List<string> FolderList = ComponentsConfigServices.GetVisualDataFilesName(ComponentsConfigServices.SaveTypePath.BuyingEventDataModel);
+            List<string> FolderList = ComponentsConfigService.GetVisualDataFilesName(ComponentsConfigService
+                                                                                      .SaveTypePath
+                                                                                      .BuyingEventDataModel);
+            
             foreach (var fileName in FolderList)
             {
-                var dataModel = _buyingEventDal.Select(ComponentsConfigServices.BuyingEventDataPath + fileName);
+                var dataModel = _buyingEventDal.Select(ComponentsConfigService.BuyingEventDataPath + fileName);
                 var result = _restClientServices.Post(WebApilink, dataModel);
                 if (result.Success)
                 {
-                    _buyingEventDal.Delete(ComponentsConfigServices.AdvEventDataPath + fileName);
+                    _buyingEventDal.Delete(ComponentsConfigService.AdvEventDataPath + fileName);
                 }
             }
         }
@@ -65,29 +72,26 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.BuyingDa
             float GameSecond)
 
         {
-            string playerId = ıdService.GetPlayerID();
-            string projectId = ChurnBlockerConfigServices.GetProjectID();
-            string customerId = ChurnBlockerConfigServices.GetCustomerID();
-            string webApilink = ChurnBlockerConfigServices.GetWebApiLink();
-            DateTime moment = DateTime.Now;
-            int difficultyLevel = ComponentsConfigServices.CurrentDifficultyLevel;
-            string filepath = ComponentsConfigServices.AdvEventDataPath;
+
+
+            int difficultyLevel = difficultySingletonModel.CurrentDifficultyLevel;
 
             BuyingEventDataModel dataModel = new BuyingEventDataModel
             {
 
-                _id = playerId,
-                ProjectID = projectId,
-                CustomerID = customerId,
+                _id = idUnityManager.GetPlayerID(),
+                ProjectID = ChurnBlockerConfigService.GetProjectID(),
+                CustomerID = ChurnBlockerConfigService.GetCustomerID(),
                 TrigersInlevelName = levelName,
                 ProductType = Tag,
                 DifficultyLevel = difficultyLevel,
                 InWhatMinutes = GameSecond,
-                TrigerdTime = moment
+                TrigerdTime = DateTime.Now
 
             };
 
 
+            string webApilink = ChurnBlockerConfigService.GetWebApiLink();
             var result = _restClientServices.Post(webApilink, dataModel);
 
             if (result.Success)
@@ -95,7 +99,9 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.BuyingDa
                 return;
             }
             string fileName = _cryptoServices.GenerateStringName(6);
-            _buyingEventDal.Insert(filepath + fileName, dataModel);
+            string filepath = ComponentsConfigService.AdvEventDataPath + fileName;
+
+            _buyingEventDal.Insert(filepath, dataModel);
         }
 
     }

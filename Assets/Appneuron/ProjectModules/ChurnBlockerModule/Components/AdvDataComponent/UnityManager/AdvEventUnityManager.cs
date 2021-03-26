@@ -9,7 +9,8 @@ using Ninject;
 using Assets.Appneuron.Core.CoreServices.CryptoServices.Absrtact;
 using Assets.Appneuron.Core.CoreServices.RestClientServices.Abstract;
 using Assets.Appneuron.Core.UnityManager;
-using Assets.Appneuron.ProjectModules.ChurnBlockerModule.ChurnBlockerServices.ConfigServices;
+using Appneuron;
+using Appneuron.Services;
 
 namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.AdvDataComponent.UnityManager
 {
@@ -22,6 +23,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.AdvDataC
         private ICryptoServices _cryptoServices;
 
         private IdUnityManager idUnityManager;
+        private DifficultySingletonModel difficultySingletonModel;
 
         private void Awake()
         {
@@ -38,61 +40,64 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.AdvDataC
         private void Start()
         {
             idUnityManager = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<IdUnityManager>();
-
+            difficultySingletonModel = DifficultySingletonModel.Instance;
         }
+
+
+
         public void CheckAdvFileAndSendData()
         {
-            string WebApilink = ChurnBlockerConfigServices.GetWebApiLink();
+            string WebApilink = ChurnBlockerConfigService.GetWebApiLink();
 
-            List<string> FolderNameList = ComponentsConfigServices.GetVisualDataFilesName(ComponentsConfigServices.SaveTypePath.AdvEventDataModel);
+            List<string> FolderNameList = ComponentsConfigService.GetVisualDataFilesName(ComponentsConfigService
+                                                                                         .SaveTypePath
+                                                                                         .AdvEventDataModel);
             foreach (var fileName in FolderNameList)
             {
-                var dataModel = _advEventDal.Select(ComponentsConfigServices.AdvEventDataPath + fileName);
+                var dataModel = _advEventDal.Select(ComponentsConfigService.AdvEventDataPath + fileName);
                 var result = _restClientServices.Post(WebApilink, dataModel);
                 if (result.Success)
                 {
-                    _advEventDal.Delete(ComponentsConfigServices.AdvEventDataPath + fileName);
+                    _advEventDal.Delete(ComponentsConfigService.AdvEventDataPath + fileName);
                 }
             }
         }
+
+
 
         public void SendAdvEventData(string Tag,
             string levelName,
             float GameSecond)
         {
-            string playerId = idUnityManager.GetPlayerID();
-            string projectId = ChurnBlockerConfigServices.GetProjectID();
-            string customerId = ChurnBlockerConfigServices.GetCustomerID();
-            string webApilink = ChurnBlockerConfigServices.GetWebApiLink();
 
-            DateTime moment = DateTime.Now;
-            int difficultyLevel = ComponentsConfigServices.CurrentDifficultyLevel;
+            int difficultyLevel = difficultySingletonModel.CurrentDifficultyLevel;
 
-            string filepath = ComponentsConfigServices.AdvEventDataPath;
-
-            AdvEventDataModel dataModel = new AdvEventDataModel
+            AdvEventDataModel advEventDataModel = new AdvEventDataModel
             {
-                _id = playerId,
-                ProjectID = projectId,
-                CustomerID = customerId,
+                _id = idUnityManager.GetPlayerID(),
+                ProjectID = ChurnBlockerConfigService.GetProjectID(),
+                CustomerID = ChurnBlockerConfigService.GetCustomerID(),
                 TrigersInlevelName = levelName,
                 AdvType = Tag,
                 DifficultyLevel = difficultyLevel,
                 InWhatMinutes = GameSecond,
-                TrigerdTime = moment
+                TrigerdTime = DateTime.Now
             };
 
 
 
-
-            var result = _restClientServices.Post(webApilink, dataModel);
+            string webApilink = ChurnBlockerConfigService.GetWebApiLink();
+            var result = _restClientServices.Post(webApilink, advEventDataModel);
 
             if (result.Success)
             {
                 return;
             }
+
             string fileName = _cryptoServices.GenerateStringName(6);
-            _advEventDal.Insert(filepath + fileName, dataModel);
+            string filepath = ComponentsConfigService.AdvEventDataPath + fileName;
+
+            _advEventDal.Insert(filepath, advEventDataModel);
 
         }
     }

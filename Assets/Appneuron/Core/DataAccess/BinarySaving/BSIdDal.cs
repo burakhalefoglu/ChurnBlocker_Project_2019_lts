@@ -1,4 +1,4 @@
-﻿using Assets.Appneuron.Core.CoreServices.SaveDataServices.Concrete.BinaryDataBase;
+﻿using Assets.Appneuron.Core.CoreServices.DataStorageService.Concrete.BinaryType;
 using Assets.Appneuron.Core.DataAccessBase;
 using Assets.Appneuron.Core.DataModelBase.Concrete;
 using System;

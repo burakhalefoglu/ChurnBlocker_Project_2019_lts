@@ -11,7 +11,8 @@ using Assets.Appneuron.Core.CoreServices.CryptoServices.Absrtact;
 using Assets.Appneuron.Core.CoreServices.RestClientServices.Abstract;
 using Assets.Appneuron.Core.UnityManager;
 using Assets.Appneuron.ProjectModules.ChurnBlockerModule.ChurnBlockerServices.CounterServices;
-using Assets.Appneuron.ProjectModules.ChurnBlockerModule.ChurnBlockerServices.ConfigServices;
+using Appneuron;
+using Appneuron.Services;
 
 namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.LevelDataComponent.UnityManager
 {
@@ -29,6 +30,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.LevelDat
         private string webApilink;
 
         private CounterServices counterServices;
+        private DifficultySingletonModel difficultySingletonModel;
 
         private void Awake()
         {
@@ -43,20 +45,21 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.LevelDat
             }
         }
 
-        void Start()
+        private void Start()
         {
             IdUnityManager idUnityManager = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<IdUnityManager>();
             counterServices = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<CounterServices>();
+            difficultySingletonModel = DifficultySingletonModel.Instance;
 
             playerId = idUnityManager.GetPlayerID();
-            projectId = ChurnBlockerConfigServices.GetProjectID();
-            customerId = ChurnBlockerConfigServices.GetCustomerID();
-            webApilink = ChurnBlockerConfigServices.GetWebApiLink();
+            projectId = ChurnBlockerConfigService.GetProjectID();
+            customerId = ChurnBlockerConfigService.GetCustomerID();
+            webApilink = ChurnBlockerConfigService.GetWebApiLink();
 
             StartCoroutine(LateStart(1));
         }
 
-        IEnumerator LateStart(float waitTime)
+        private IEnumerator LateStart(float waitTime)
         {
             yield return new WaitForSeconds(waitTime);
             CheckEveryLoginLevelDatasAndSend();
@@ -94,13 +97,13 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.LevelDat
 
         }
 
-        void SendLevelbaseDieDatas
+        private void SendLevelbaseDieDatas
             (string levelName,
             int minutes,
             Vector3 transform)
         {
 
-            string filepath = ComponentsConfigServices.LevelBaseDieDataPath;
+            string filepath = ComponentsConfigService.LevelBaseDieDataPath;
 
             LevelBaseDieDataModel dataModel = new LevelBaseDieDataModel
             {
@@ -110,7 +113,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.LevelDat
                 CustomerID = customerId,
                 levelName = levelName,
                 DiyingTimeAfterLevelStarting = minutes,
-                DiyingDifficultyLevel = ComponentsConfigServices.CurrentDifficultyLevel,
+                DiyingDifficultyLevel = difficultySingletonModel.CurrentDifficultyLevel,
                 DiyingLocationX = transform.x,
                 DiyingLocationY = transform.y,
                 DiyingLocationZ = transform.z
@@ -129,29 +132,28 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.LevelDat
 
         }
 
-        void CheckLevelbaseDieAndSend()
+        private void CheckLevelbaseDieAndSend()
         {
 
-            List<string> FolderList = ComponentsConfigServices.GetVisualDataFilesName(ComponentsConfigServices.SaveTypePath.LevelBaseDieDataModel);
+            List<string> FolderList = ComponentsConfigService.GetVisualDataFilesName(ComponentsConfigService.SaveTypePath.LevelBaseDieDataModel);
             foreach (var fileName in FolderList)
             {
-                var dataModel = _levelBaseDieDal.Select(ComponentsConfigServices.LevelBaseDieDataPath + fileName);
+                var dataModel = _levelBaseDieDal.Select(ComponentsConfigService.LevelBaseDieDataPath + fileName);
                 var result = _restClientServices.Post(webApilink, dataModel);
                 if (result.Success)
                 {
-                    _levelBaseDieDal.Delete(ComponentsConfigServices.LevelBaseDieDataPath + fileName);
+                    _levelBaseDieDal.Delete(ComponentsConfigService.LevelBaseDieDataPath + fileName);
                 }
             }
         }
 
-        void SendEveryLoginLevelDatas
+        private void SendEveryLoginLevelDatas
             (string levelname,
             int minutes,
             int averageScores,
             int isDead,
             int totalPowerUsage)
         {
-            string filepath = ComponentsConfigServices.EveryLoginLevelDatasPath;
 
             EveryLoginLevelDatasModel dataModel = new EveryLoginLevelDatasModel
             {
@@ -160,7 +162,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.LevelDat
                 ProjectID = projectId,
                 CustomerID = customerId,
                 Levelname = levelname,
-                LevelsDifficultylevel = ComponentsConfigServices.CurrentDifficultyLevel,
+                LevelsDifficultylevel = difficultySingletonModel.CurrentDifficultyLevel,
                 PlayingTime = minutes,
                 AverageScores = averageScores,
                 IsDead = isDead,
@@ -175,21 +177,23 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.LevelDat
                 return;
             }
             string fileName = _cryptoServices.GenerateStringName(6);
-            _everyLoginLevelDal.Insert(filepath + fileName, dataModel);
+            string filepath = ComponentsConfigService.EveryLoginLevelDatasPath + fileName;
+
+            _everyLoginLevelDal.Insert(filepath, dataModel);
         }
 
 
-        void CheckEveryLoginLevelDatasAndSend()
+        private void CheckEveryLoginLevelDatasAndSend()
         {
 
-            List<string> FolderList = ComponentsConfigServices.GetVisualDataFilesName(ComponentsConfigServices.SaveTypePath.EveryLoginLevelDatasModel);
+            List<string> FolderList = ComponentsConfigService.GetVisualDataFilesName(ComponentsConfigService.SaveTypePath.EveryLoginLevelDatasModel);
             foreach (var fileName in FolderList)
             {
-                var dataModel = _everyLoginLevelDal.Select(ComponentsConfigServices.EveryLoginLevelDatasPath + fileName);
+                var dataModel = _everyLoginLevelDal.Select(ComponentsConfigService.EveryLoginLevelDatasPath + fileName);
                 var result = _restClientServices.Post(webApilink, dataModel);
                 if (result.Success)
                 {
-                    _everyLoginLevelDal.Delete(ComponentsConfigServices.EveryLoginLevelDatasPath + fileName);
+                    _everyLoginLevelDal.Delete(ComponentsConfigService.EveryLoginLevelDatasPath + fileName);
                 }
             }
 

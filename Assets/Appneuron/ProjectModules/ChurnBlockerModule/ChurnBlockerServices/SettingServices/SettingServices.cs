@@ -1,14 +1,23 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEditor;
-using Assets.Appneuron.ProjectModules.ChurnBlockerModule.ChurnBlockerServices.ConfigServices;
+using Appneuron.Services;
 
 namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.ChurnBlockerServices.SettingServices
 {
+
+    public static class ProgramList
+    {
+       public readonly static string SURVEY_INPUT = "burak";
+        public readonly static string SURVEY_2 = "burak";
+
+    }
+
     public class SettingServices : MonoBehaviour
     {
+        
+
 
         [Enumeration(new string[] { "HyperCasual", "Arcade", "Strategy", "Other" })]
         [SerializeField]
@@ -18,13 +27,15 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.ChurnBlockerService
         [SerializeField]
         private int graphStyle;
 
-
-        private void Start()
+        public int GetGameType()
         {
-            ComponentsConfigServices.GameType = gameType;
-            ComponentsConfigServices.GraphStyle = graphStyle;
+            return gameType;
         }
 
+        public int GetGraphStyle()
+        {
+            return graphStyle;
+        }
     }
 
 
@@ -33,7 +44,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.ChurnBlockerService
     public class EnumerationAttribute : PropertyAttribute
     {
 
-        public readonly string[] Items;
+        public string[] Items { get; set; }
         public int Selected { get; set; }
 
         public EnumerationAttribute(params string[] enumerations) { Items = enumerations; }
@@ -41,6 +52,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.ChurnBlockerService
     }
 
 
+#if UNITY_EDITOR
 
     [CustomPropertyDrawer(typeof(EnumerationAttribute))]
     public class EnumerationDrawer : PropertyDrawer
@@ -56,4 +68,6 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.ChurnBlockerService
         }
 
     }
+#endif
+
 }
