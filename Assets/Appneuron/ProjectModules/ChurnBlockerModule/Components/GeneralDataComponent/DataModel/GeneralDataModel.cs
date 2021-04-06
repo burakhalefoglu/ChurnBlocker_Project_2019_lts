@@ -12,9 +12,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.GeneralD
         public string _id { get; set; }
         public string ProjectID { get; set; }
         public string CustomerID { get; set; }
-        public int GameType { get; set; }
         public int PlayersDifficultylevel { get; set; }
-        public int GraphStyle { get; set; }
 
     }
 }

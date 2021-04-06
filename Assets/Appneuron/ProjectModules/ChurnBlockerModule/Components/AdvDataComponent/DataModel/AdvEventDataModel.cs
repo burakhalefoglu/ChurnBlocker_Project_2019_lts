@@ -15,5 +15,6 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.AdvDataC
         public int DifficultyLevel { get; set; }
         public float InWhatMinutes { get; set; }
         public DateTime TrigerdTime { get; set; }
+
     }
 }

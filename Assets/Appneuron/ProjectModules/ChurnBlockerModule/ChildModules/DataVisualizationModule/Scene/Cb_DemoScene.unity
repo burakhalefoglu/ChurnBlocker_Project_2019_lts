@@ -291,11 +291,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Appneuron
       objectReference: {fileID: 0}
-    - target: {fileID: 7019957483230550448, guid: 920f434976b738448b0bb61c4981ec8f,
-        type: 3}
-      propertyPath: m_TagString
-      value: ChurnBlocker
-      objectReference: {fileID: 0}
     - target: {fileID: 8895102255309259808, guid: 920f434976b738448b0bb61c4981ec8f,
         type: 3}
       propertyPath: m_RootOrder

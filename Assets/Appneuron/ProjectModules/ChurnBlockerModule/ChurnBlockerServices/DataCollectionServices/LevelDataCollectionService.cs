@@ -10,6 +10,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.ChurnBlockerService
 {
     public static class LevelDataCollectionService
     {
+        //overloading ile farklı senaryolar için fonksiyonlar yazılacak....
         public static void GetLevelDatas
             (int charScores,
             bool isDead,
@@ -25,6 +26,16 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.ChurnBlockerService
                 isDead,
                 charScores,
                 totalPowerUsage);
+        }
+        public static void GetLevelDatas
+           (int charScores,
+           bool isDead,
+           int totalPowerUsage
+          )
+        {
+            LevelDatasManager levelDatasManager = GameObject.FindGameObjectWithTag("ChurnBlocker")
+                    .GetComponent<LevelDatasManager>();
+           
         }
     }
 }

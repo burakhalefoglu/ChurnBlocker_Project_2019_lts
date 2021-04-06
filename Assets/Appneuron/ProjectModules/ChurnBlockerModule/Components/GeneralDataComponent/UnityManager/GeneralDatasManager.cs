@@ -8,7 +8,6 @@ using UnityEngine;
 using Ninject;
 using Assets.Appneuron.Core.CoreServices.RestClientServices.Abstract;
 using Assets.Appneuron.Core.UnityManager;
-using Assets.Appneuron.ProjectModules.ChurnBlockerModule.ChurnBlockerServices.SettingServices;
 using Appneuron.Services;
 
 namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.GeneralDataComponent.UnityManager
@@ -19,7 +18,6 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.GeneralD
         private IRestClientServices _restClientServices;
         private ISuccessSaveInfoDal _successSaveInfoDal;
         private IGeneralDataDal _generalDataDal;
-        private SettingServices settingService;
 
         private IdUnityManager idUnityManager;
 
@@ -39,7 +37,6 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.GeneralD
         {
             
             idUnityManager = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<IdUnityManager>();
-            settingService = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<SettingServices>();
             StartCoroutine(LateStart(1));
         }
 
@@ -62,9 +59,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.GeneralD
                 _id = idUnityManager.GetPlayerID(),
                 ProjectID = ChurnBlockerConfigService.GetProjectID(),
                 CustomerID = ChurnBlockerConfigService.GetCustomerID(),
-                GameType = settingService.GetGameType(),
                 PlayersDifficultylevel = 0,
-                GraphStyle = settingService.GetGraphStyle()
             });
 
             if (result.Success)
@@ -104,6 +99,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.GeneralD
             }
             return false;
         }
+
     }
 
 }
