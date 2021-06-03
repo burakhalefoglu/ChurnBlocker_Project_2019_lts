@@ -1,14 +1,15 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Assets.Appneuron.Core.CoreServices.DataStorageService.Abstract
 {
     public interface IRepositoryService<T>
     {
 
-        void Insert(string filePath, T dataModel);
-        T Select(string filePath);
-        void Delete(string filePath);
+        Task InsertAsync(string filePath, T dataModel);
+        Task<T> SelectAsync(string filePath);
+        Task DeleteAsync(string filePath);
 
     }
 }

@@ -11,6 +11,7 @@ using Assets.Appneuron.Core.CoreServices.RestClientServices.Abstract;
 using Assets.Appneuron.Core.UnityManager;
 using Appneuron;
 using Appneuron.Services;
+using System.Threading.Tasks;
 
 namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.AdvDataComponent.UnityManager
 {
@@ -45,7 +46,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.AdvDataC
 
 
 
-        public void CheckAdvFileAndSendData()
+        public async Task CheckAdvFileAndSendData()
         {
             string WebApilink = ChurnBlockerConfigService.GetWebApiLink();
 
@@ -54,18 +55,18 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.AdvDataC
                                                                                          .AdvEventDataModel);
             foreach (var fileName in FolderNameList)
             {
-                var dataModel = _advEventDal.Select(ComponentsConfigService.AdvEventDataPath + fileName);
-                var result = _restClientServices.Post(WebApilink, dataModel);
+                var dataModel = await _advEventDal.SelectAsync(ComponentsConfigService.AdvEventDataPath + fileName);
+                var result = await _restClientServices.PostAsync<System.Object>(WebApilink, dataModel);
                 if (result.Success)
                 {
-                    _advEventDal.Delete(ComponentsConfigService.AdvEventDataPath + fileName);
+                    await _advEventDal.DeleteAsync(ComponentsConfigService.AdvEventDataPath + fileName);
                 }
             }
         }
 
 
 
-        public void SendAdvEventData(string Tag,
+        public async Task SendAdvEventData(string Tag,
             string levelName,
             float GameSecond)
         {
@@ -74,7 +75,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.AdvDataC
 
             AdvEventDataModel advEventDataModel = new AdvEventDataModel
             {
-                _id = idUnityManager.GetPlayerID(),
+                _id = await idUnityManager.GetPlayerID(),
                 ProjectID = ChurnBlockerConfigService.GetProjectID(),
                 CustomerID = ChurnBlockerConfigService.GetCustomerID(),
                 TrigersInlevelName = levelName,
@@ -87,7 +88,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.AdvDataC
 
 
             string webApilink = ChurnBlockerConfigService.GetWebApiLink();
-            var result = _restClientServices.Post(webApilink, advEventDataModel);
+            var result = await _restClientServices.PostAsync<System.Object>(webApilink, advEventDataModel);
 
             if (result.Success)
             {
@@ -97,7 +98,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.AdvDataC
             string fileName = _cryptoServices.GenerateStringName(6);
             string filepath = ComponentsConfigService.AdvEventDataPath + fileName;
 
-            _advEventDal.Insert(filepath, advEventDataModel);
+            await _advEventDal.InsertAsync(filepath, advEventDataModel);
 
         }
     }

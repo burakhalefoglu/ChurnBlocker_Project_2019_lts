@@ -6,17 +6,19 @@ using Newtonsoft.Json;
 using System.Net;
 using Assets.Appneuron.Core.CoreServices.RestClientServices.Abstract;
 using Assets.Appneuron.Core.CoreServices.ResultService;
+using System.Threading.Tasks;
+using Assets.Appneuron.Core.DataModel.Concrete;
 
 namespace Assets.Appneuron.Core.CoreServices.RestClientServices.Concrete.RestSharp
 {
     public class RestSharpServices : IRestClientServices
     {
 
-        public IDataResult<T> Get<T>(string url)
+        public async Task<IDataResult<T>> GetAsync<T>(string url)
         {
             var client = new RestClient(url);
             var request = new RestRequest(Method.GET);
-            IRestResponse response = client.Execute(request);
+            IRestResponse response = await client.ExecuteAsync(request);
 
             var userData = JsonConvert.DeserializeObject<T>(response.Content,
                     new JsonSerializerSettings
@@ -28,29 +30,39 @@ namespace Assets.Appneuron.Core.CoreServices.RestClientServices.Concrete.RestSha
             int numericStatusCode = (int)statusCode;
             if (numericStatusCode == 200)
             {
-                return new SuccessDataResult<T>(userData, statuseCode:numericStatusCode);
+                return new SuccessDataResult<T>(userData, statuseCode: numericStatusCode);
             }
-            return new ErrorDataResult<T>(userData, statuseCode:numericStatusCode);
+            return new ErrorDataResult<T>(userData, statuseCode: numericStatusCode);
 
         }
 
-        public IResult Post(string url, object sendObject)
+        public async Task<IDataResult<T>> PostAsync<T>(string url, object sendObject)
         {
             var client = new RestClient(url);
             var request = new RestRequest(Method.POST);
             request.AddHeader("accept", "application/json");
             request.AddHeader("content-type", "application/json");
+            request.AddHeader("authorization", "Bearer " + TokenSingletonModel.Instance.Token);
             var jsonObject = JsonConvert.SerializeObject(sendObject);
             request.AddParameter("application/json", jsonObject, ParameterType.RequestBody);
-            IRestResponse response = client.Execute(request);
-            Debug.Log(response.Content);
+
+            IRestResponse response = await client.ExecuteAsync(request);
+
+
+            var data = JsonConvert.DeserializeObject<T>(response.Content,
+                              new JsonSerializerSettings
+                              {
+                                  PreserveReferencesHandling = PreserveReferencesHandling.Objects
+                              });
+
             HttpStatusCode statusCode = response.StatusCode;
             int numericStatusCode = (int)statusCode;
-            if(numericStatusCode == 201)
+            Debug.Log(response.Content);
+            if (numericStatusCode == 201 || numericStatusCode == 200)
             {
-                return new SuccessResult(numericStatusCode);
+                return new SuccessDataResult<T>(data, numericStatusCode);
             }
-            return new ErrorResult(numericStatusCode);
+            return new ErrorDataResult<T>(data, numericStatusCode);
         }
 
         public IResult Delete(string url)

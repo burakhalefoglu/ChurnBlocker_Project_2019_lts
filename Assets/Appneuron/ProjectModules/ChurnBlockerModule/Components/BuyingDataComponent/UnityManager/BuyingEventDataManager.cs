@@ -46,7 +46,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.BuyingDa
 
         }
 
-        public void CheckAdvFileAndSendData()
+        public async Task CheckAdvFileAndSendData()
         {
 
 
@@ -55,19 +55,19 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.BuyingDa
             List<string> FolderList = ComponentsConfigService.GetVisualDataFilesName(ComponentsConfigService
                                                                                       .SaveTypePath
                                                                                       .BuyingEventDataModel);
-            
+
             foreach (var fileName in FolderList)
             {
-                var dataModel = _buyingEventDal.Select(ComponentsConfigService.BuyingEventDataPath + fileName);
-                var result = _restClientServices.Post(WebApilink, dataModel);
+                var dataModel = await _buyingEventDal.SelectAsync(ComponentsConfigService.BuyingEventDataPath + fileName);
+                var result = await _restClientServices.PostAsync<System.Object>(WebApilink, dataModel);
                 if (result.Success)
                 {
-                    _buyingEventDal.Delete(ComponentsConfigService.AdvEventDataPath + fileName);
+                    await _buyingEventDal.DeleteAsync(ComponentsConfigService.AdvEventDataPath + fileName);
                 }
             }
         }
 
-        public void SendAdvEventData(string Tag,
+        public async Task SendAdvEventData(string Tag,
             string levelName,
             float GameSecond)
 
@@ -79,7 +79,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.BuyingDa
             BuyingEventDataModel dataModel = new BuyingEventDataModel
             {
 
-                _id = idUnityManager.GetPlayerID(),
+                _id = await idUnityManager.GetPlayerID(),
                 ProjectID = ChurnBlockerConfigService.GetProjectID(),
                 CustomerID = ChurnBlockerConfigService.GetCustomerID(),
                 TrigersInlevelName = levelName,
@@ -92,7 +92,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.BuyingDa
 
 
             string webApilink = ChurnBlockerConfigService.GetWebApiLink();
-            var result = _restClientServices.Post(webApilink, dataModel);
+            var result = await _restClientServices.PostAsync<System.Object>(webApilink, dataModel);
 
             if (result.Success)
             {
@@ -101,7 +101,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.BuyingDa
             string fileName = _cryptoServices.GenerateStringName(6);
             string filepath = ComponentsConfigService.AdvEventDataPath + fileName;
 
-            _buyingEventDal.Insert(filepath, dataModel);
+            await _buyingEventDal.InsertAsync(filepath, dataModel);
         }
 
     }

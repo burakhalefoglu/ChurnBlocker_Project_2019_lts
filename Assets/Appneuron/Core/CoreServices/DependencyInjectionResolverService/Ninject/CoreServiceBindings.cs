@@ -10,6 +10,7 @@ using Assets.Appneuron.Core.CoreServices.RestClientServices.Abstract;
 using Assets.Appneuron.Core.DataAccess.BinarySaving;
 using Assets.Appneuron.Core.DataAccessBase;
 using Assets.Appneuron.Core.CoreServices.RestClientServices.Concrete.RestSharp;
+using Assets.Appneuron.Core.DataAccess;
 
 namespace Assets.Appneuron.Core.CoreServices.DependencyInjectionResolverService.Ninject
 {
@@ -21,7 +22,7 @@ namespace Assets.Appneuron.Core.CoreServices.DependencyInjectionResolverService.
             Bind<ICryptoServices>().To<EfforlessCryptoServices>().InSingletonScope();
             Bind<IRestClientServices>().To<RestSharpServices>().InSingletonScope();
             Bind<IIdDal>().To<BSIdDal>().InSingletonScope();
-
+            Bind<IJwtDal>().To<BSJwtDal>().InSingletonScope();
         }
     }
 }

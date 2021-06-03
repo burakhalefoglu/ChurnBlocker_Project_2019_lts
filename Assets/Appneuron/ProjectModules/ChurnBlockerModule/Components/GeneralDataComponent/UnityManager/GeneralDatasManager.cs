@@ -9,12 +9,14 @@ using Ninject;
 using Assets.Appneuron.Core.CoreServices.RestClientServices.Abstract;
 using Assets.Appneuron.Core.UnityManager;
 using Appneuron.Services;
+using System.Threading.Tasks;
+using System;
 
 namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.GeneralDataComponent.UnityManager
 {
     public class GeneralDatasManager : MonoBehaviour
     {
-         
+
         private IRestClientServices _restClientServices;
         private ISuccessSaveInfoDal _successSaveInfoDal;
         private IGeneralDataDal _generalDataDal;
@@ -33,30 +35,31 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.GeneralD
             }
         }
 
-        void Start()
+        public async void Start()
         {
-            
+
             idUnityManager = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<IdUnityManager>();
-            StartCoroutine(LateStart(1));
+
+            await LateStart(1);
         }
 
-        IEnumerator LateStart(float waitTime)
+        async Task LateStart(float waitTime)
         {
-            yield return new WaitForSeconds(waitTime);
+            await Task.Delay(TimeSpan.FromSeconds(waitTime));
             if (!checkFileExist())
             {
-                AddGeneralDatas();
+                await AddGeneralDatas();
             }
         }
 
-        void AddGeneralDatas()
+        async Task AddGeneralDatas()
         {
 
             string WebApilink = ChurnBlockerConfigService.GetWebApiLink();
 
-            var result = _restClientServices.Post(WebApilink, new GeneralDataModel
+            var result = await _restClientServices.PostAsync<System.Object>(WebApilink, new GeneralDataModel
             {
-                _id = idUnityManager.GetPlayerID(),
+                _id = await idUnityManager.GetPlayerID(),
                 ProjectID = ChurnBlockerConfigService.GetProjectID(),
                 CustomerID = ChurnBlockerConfigService.GetCustomerID(),
                 PlayersDifficultylevel = 0,
@@ -65,7 +68,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.GeneralD
             if (result.Success)
             {
 
-                SavePlayerSuccessSaveGeneralDataInfo();
+                await SavePlayerSuccessSaveGeneralDataInfo();
                 Debug.Log("Başarılı....");
                 return;
             }
@@ -74,12 +77,12 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.GeneralD
         }
 
 
-        void SavePlayerSuccessSaveGeneralDataInfo()
+        async Task SavePlayerSuccessSaveGeneralDataInfo()
         {
             string fileName = "GeneralDataSaved";
             string filepath = ComponentsConfigService.GeneralDataPath + fileName;
 
-            _successSaveInfoDal.Insert(filepath, new SuccessSaveInfo
+            await _successSaveInfoDal.InsertAsync(filepath, new SuccessSaveInfo
             {
                 IsSaved = true
             });

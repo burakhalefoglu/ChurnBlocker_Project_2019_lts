@@ -4,54 +4,58 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Collections.Generic;
 using Assets.Appneuron.Core.DataModelBase.Abstract;
 using Assets.Appneuron.Core.CoreServices.DataStorageService.Abstract;
+using System.Threading.Tasks;
+using System;
 
 namespace Assets.Appneuron.Core.CoreServices.DataStorageService.Concrete.BinaryType
 {
     public class BinaryTypeRepositoryBase<T> : IRepositoryService<T>
         where T : class, IEntity, new()
     {
-        public T Select(string filePath)
+
+
+        public Task<T> SelectAsync(string filePath)
         {
+            var binaryFormatter = new BinaryFormatter();
             string savePath = filePath + ".data";
-            Debug.Log(savePath);
-            if (File.Exists(savePath))
+            if (!File.Exists(savePath))
             {
-
-                var binaryFormatter = new BinaryFormatter();
-                using (var fileStream = File.Open(savePath, FileMode.Open))
-                {
-                    T dataModel = (T)binaryFormatter.Deserialize(fileStream);
-                    return dataModel;
-                }
+                return Task.FromResult<T>(null);
+            }
+            using (var fileStream = File.Open(savePath,
+            FileMode.OpenOrCreate,
+            FileAccess.ReadWrite,
+            FileShare.None))
+            {
+                T dataModel = (T)binaryFormatter.Deserialize(fileStream);
+                return Task.FromResult(dataModel);
 
             }
-            else
-            {
-                Debug.LogWarning("Save file doesn't exist.");
-            }
-            return null;
-
-
         }
 
-        public void Insert(string filePath, T dataModel)
+
+
+        public async Task InsertAsync(string filePath, T dataModel)
         {
 
             var binaryFormatter = new BinaryFormatter();
-
-
             string savePath = filePath + ".data";
-            using (var fileStream = File.Create(savePath))
+            await Task.Run(() =>
             {
-                binaryFormatter.Serialize(fileStream, dataModel);
-            }
-
+                using (var fileStream = File.Create(savePath))
+                {
+                    binaryFormatter.Serialize(fileStream, dataModel);
+                }
+            });
         }
 
-        public void Delete(string filePath)
+        public async Task DeleteAsync(string filePath)
         {
             string saveFilePath = filePath + ".data";
-            File.Delete(saveFilePath);
+            await Task.Run(() =>
+            {
+                File.Delete(saveFilePath);
+            });
             Debug.Log("File Deleted");
 
         }

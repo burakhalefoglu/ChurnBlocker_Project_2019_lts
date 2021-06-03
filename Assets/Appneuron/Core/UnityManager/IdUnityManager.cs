@@ -19,7 +19,7 @@ namespace Assets.Appneuron.Core.UnityManager
         private IIdDal _bSIdDal;
         private ICryptoServices _cryptoServices;
 
-        private void Awake()
+        private async void Awake()
         {
             using (var kernel = new StandardKernel())
             {
@@ -30,9 +30,9 @@ namespace Assets.Appneuron.Core.UnityManager
 
 
             CreateFileDirectories();
-            SaveIdOnSaveFolder();
+            await SaveIdOnSaveFolder();
         }
-        private void SaveIdOnSaveFolder()
+        private async Task SaveIdOnSaveFolder()
         {
             string filepath = CustomerIdPath;
             string fileName = "_id";
@@ -42,25 +42,26 @@ namespace Assets.Appneuron.Core.UnityManager
             if (!File.Exists(savePath))
             {
                 string id = GenerateId();
-                _bSIdDal.Insert(filepath + fileName, new CustomerIdModel
+                await _bSIdDal.InsertAsync(filepath + fileName, new CustomerIdModel
                 {
                     _id = id
                 });
 
             }
         }
-        public string GetPlayerID()
+        public async Task<string> GetPlayerID()
         {
             string filepath = GeneralData[IdPath.id];
             string fileName = "_id";
-            var customerIdModel = _bSIdDal.Select(filepath + fileName);
+            var customerIdModel = await _bSIdDal.SelectAsync(filepath + fileName);
             return customerIdModel._id;
         }
 
         private string GenerateId()
         {
-            var id = _cryptoServices.GetRandomHexNumber(32);
-            return id;
+            //will be use
+            //"var id = _cryptoServices.GetRandomHexNumber(32);"
+            return SystemInfo.deviceUniqueIdentifier;
 
         }
 

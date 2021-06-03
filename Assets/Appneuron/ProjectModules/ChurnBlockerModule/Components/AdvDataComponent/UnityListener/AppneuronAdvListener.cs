@@ -13,21 +13,21 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.AdvDataC
         private AdvEventUnityManager advEventUnityManager;
 
 
-        void Start()
+        async void Start()
         {
             advEventUnityManager = GameObject.FindGameObjectWithTag("ChurnBlocker").GetComponent<AdvEventUnityManager>();
 
-            advEventUnityManager.CheckAdvFileAndSendData();
+            await advEventUnityManager.CheckAdvFileAndSendData();
             counterServices = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<CounterServices>();
             GameObject gameObject = this.gameObject;
             Button button = gameObject.GetComponent<Button>();
-            button.onClick.AddListener(() =>
+            button.onClick.AddListener(async () =>
             {
                 string levelName = counterServices.SceneName;
                 float inMinutes = counterServices.LevelBaseGameTimer;
-                advEventUnityManager.SendAdvEventData(this.gameObject.tag,
-                    levelName,
-                    inMinutes);
+                await advEventUnityManager.SendAdvEventData(this.gameObject.tag,
+                      levelName,
+                      inMinutes);
             });
         }
     }
