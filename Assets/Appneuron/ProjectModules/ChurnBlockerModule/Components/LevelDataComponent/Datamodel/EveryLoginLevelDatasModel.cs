@@ -7,7 +7,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.LevelDat
     [Serializable]
     public class EveryLoginLevelDatasModel : IEntity
     {
-        public string _id { get; set; }
+        public string ClientId { get; set; }
         public string ProjectID { get; set; }
         public string CustomerID { get; set; }
         public string Levelname { get; set; }

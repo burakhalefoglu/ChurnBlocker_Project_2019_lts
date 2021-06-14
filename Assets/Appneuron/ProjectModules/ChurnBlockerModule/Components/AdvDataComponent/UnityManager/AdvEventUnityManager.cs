@@ -9,7 +9,7 @@ using Ninject;
 using Assets.Appneuron.Core.CoreServices.CryptoServices.Absrtact;
 using Assets.Appneuron.Core.CoreServices.RestClientServices.Abstract;
 using Assets.Appneuron.Core.UnityManager;
-using Appneuron;
+using Appneuron.Models;
 using Appneuron.Services;
 using System.Threading.Tasks;
 
@@ -18,6 +18,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.AdvDataC
 
     public class AdvEventUnityManager : MonoBehaviour
     {
+        private string AdvEventsRequestPath;
 
         private IAdvEventDal _advEventDal;
         private IRestClientServices _restClientServices;
@@ -25,6 +26,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.AdvDataC
 
         private IdUnityManager idUnityManager;
         private DifficultySingletonModel difficultySingletonModel;
+        private LocalDataService localDataService;
 
         private void Awake()
         {
@@ -38,17 +40,31 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.AdvDataC
 
         }
 
-        private void Start()
+        private async void Start()
         {
             idUnityManager = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<IdUnityManager>();
+            localDataService = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<LocalDataService>();
+            AdvEventsRequestPath = WebApiConfigService.ClientWebApiLink + WebApiConfigService.AdvEventsRequestName;
             difficultySingletonModel = DifficultySingletonModel.Instance;
+
+            await LateStart(3);
+
+        }
+        async Task LateStart(float waitTime)
+        {
+            await Task.Delay(TimeSpan.FromSeconds(waitTime));
+            await CheckAdvFileAndSendData();
+            localDataService.CheckLocalData += CheckAdvFileAndSendData;
         }
 
+        private void OnApplicationQuit()
+        {
+            localDataService.CheckLocalData -= CheckAdvFileAndSendData;
 
+        }
 
         public async Task CheckAdvFileAndSendData()
         {
-            string WebApilink = ChurnBlockerConfigService.GetWebApiLink();
 
             List<string> FolderNameList = ComponentsConfigService.GetVisualDataFilesName(ComponentsConfigService
                                                                                          .SaveTypePath
@@ -56,7 +72,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.AdvDataC
             foreach (var fileName in FolderNameList)
             {
                 var dataModel = await _advEventDal.SelectAsync(ComponentsConfigService.AdvEventDataPath + fileName);
-                var result = await _restClientServices.PostAsync<System.Object>(WebApilink, dataModel);
+                var result = await _restClientServices.PostAsync<System.Object>(AdvEventsRequestPath, dataModel);
                 if (result.Success)
                 {
                     await _advEventDal.DeleteAsync(ComponentsConfigService.AdvEventDataPath + fileName);
@@ -75,20 +91,19 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.AdvDataC
 
             AdvEventDataModel advEventDataModel = new AdvEventDataModel
             {
-                _id = await idUnityManager.GetPlayerID(),
-                ProjectID = ChurnBlockerConfigService.GetProjectID(),
-                CustomerID = ChurnBlockerConfigService.GetCustomerID(),
+                ClientId = await idUnityManager.GetPlayerID(),
+                ProjectID = ChurnBlockerSingletonConfigService.Instance.GetProjectID(),
+                CustomerID = ChurnBlockerSingletonConfigService.Instance.GetCustomerID(),
                 TrigersInlevelName = levelName,
                 AdvType = Tag,
                 DifficultyLevel = difficultyLevel,
-                InWhatMinutes = GameSecond,
+                InMinutes = GameSecond,
                 TrigerdTime = DateTime.Now
             };
 
 
 
-            string webApilink = ChurnBlockerConfigService.GetWebApiLink();
-            var result = await _restClientServices.PostAsync<System.Object>(webApilink, advEventDataModel);
+            var result = await _restClientServices.PostAsync<System.Object>(AdvEventsRequestPath, advEventDataModel);
 
             if (result.Success)
             {

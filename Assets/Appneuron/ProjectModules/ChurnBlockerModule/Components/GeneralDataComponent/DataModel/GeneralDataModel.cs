@@ -9,7 +9,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.GeneralD
     public class GeneralDataModel : IEntity
     {
 
-        public string _id { get; set; }
+        public string ClientId { get; set; }
         public string ProjectID { get; set; }
         public string CustomerID { get; set; }
         public int PlayersDifficultylevel { get; set; }

@@ -13,11 +13,10 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.AdvDataC
         private AdvEventUnityManager advEventUnityManager;
 
 
-        async void Start()
+        void Start()
         {
             advEventUnityManager = GameObject.FindGameObjectWithTag("ChurnBlocker").GetComponent<AdvEventUnityManager>();
 
-            await advEventUnityManager.CheckAdvFileAndSendData();
             counterServices = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<CounterServices>();
             GameObject gameObject = this.gameObject;
             Button button = gameObject.GetComponent<Button>();

@@ -18,15 +18,14 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.BuyingDa
         void Start()
         {
             _buyingEventDataManager = GameObject.FindGameObjectWithTag("ChurnBlocker").GetComponent<BuyingEventDataManager>();
-            _buyingEventDataManager.CheckAdvFileAndSendData();
             counterServices = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<CounterServices>();
             GameObject gameObject = this.gameObject;
             Button button = gameObject.GetComponent<Button>();
-            button.onClick.AddListener(() =>
+            button.onClick.AddListener(async () =>
             {
                 string levelName = counterServices.SceneName;
                 float inMinutes = counterServices.LevelBaseGameTimer;
-                _buyingEventDataManager.SendAdvEventData(this.gameObject.tag,
+                await _buyingEventDataManager.SendAdvEventData(this.gameObject.tag,
                     levelName,
                     inMinutes);
             });

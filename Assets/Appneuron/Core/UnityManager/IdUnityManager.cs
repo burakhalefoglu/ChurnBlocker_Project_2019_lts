@@ -11,6 +11,7 @@ using static Assets.Appneuron.Core.CoreServices.IdConfigService.IdConfigServices
 using Assets.Appneuron.Core.CoreServices.CryptoServices.Absrtact;
 using Assets.Appneuron.Core.DataAccessBase;
 using Assets.Appneuron.Core.DataModelBase.Concrete;
+using Appneuron.Models;
 
 namespace Assets.Appneuron.Core.UnityManager
 {
@@ -35,9 +36,9 @@ namespace Assets.Appneuron.Core.UnityManager
         private async Task SaveIdOnSaveFolder()
         {
             string filepath = CustomerIdPath;
-            string fileName = "_id";
+            string fileName = ModelNames.IdName;
 
-            string savePath = filepath + fileName + ".data";
+            string savePath = filepath + fileName;
 
             if (!File.Exists(savePath))
             {
@@ -52,7 +53,7 @@ namespace Assets.Appneuron.Core.UnityManager
         public async Task<string> GetPlayerID()
         {
             string filepath = GeneralData[IdPath.id];
-            string fileName = "_id";
+            string fileName = ModelNames.IdName;
             var customerIdModel = await _bSIdDal.SelectAsync(filepath + fileName);
             return customerIdModel._id;
         }

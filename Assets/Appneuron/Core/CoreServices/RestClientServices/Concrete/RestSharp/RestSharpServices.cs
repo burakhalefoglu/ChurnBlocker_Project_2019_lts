@@ -14,6 +14,7 @@ namespace Assets.Appneuron.Core.CoreServices.RestClientServices.Concrete.RestSha
     public class RestSharpServices : IRestClientServices
     {
 
+
         public async Task<IDataResult<T>> GetAsync<T>(string url)
         {
             var client = new RestClient(url);
@@ -28,7 +29,8 @@ namespace Assets.Appneuron.Core.CoreServices.RestClientServices.Concrete.RestSha
 
             HttpStatusCode statusCode = response.StatusCode;
             int numericStatusCode = (int)statusCode;
-            if (numericStatusCode == 200)
+            var isSuccess = response.IsSuccessful;
+            if (isSuccess)
             {
                 return new SuccessDataResult<T>(userData, statuseCode: numericStatusCode);
             }
@@ -58,22 +60,61 @@ namespace Assets.Appneuron.Core.CoreServices.RestClientServices.Concrete.RestSha
             HttpStatusCode statusCode = response.StatusCode;
             int numericStatusCode = (int)statusCode;
             Debug.Log(response.Content);
-            if (numericStatusCode == 201 || numericStatusCode == 200)
+            var isSuccess = response.IsSuccessful;
+            if (isSuccess)
             {
-                return new SuccessDataResult<T>(data, numericStatusCode);
+                return new SuccessDataResult<T>(data, statuseCode: numericStatusCode);
             }
+
             return new ErrorDataResult<T>(data, numericStatusCode);
         }
 
-        public IResult Delete(string url)
+        public async Task<IDataResult<T>> PutAsync<T>(string url, object sendObject)
         {
-            throw new System.NotImplementedException();
+            var client = new RestClient(url);
+            var request = new RestRequest(Method.PUT);
+            request.AddHeader("accept", "application/json");
+            request.AddHeader("content-type", "application/json");
+            request.AddHeader("authorization", "Bearer " + TokenSingletonModel.Instance.Token);
+            var jsonObject = JsonConvert.SerializeObject(sendObject);
+            request.AddParameter("application/json", jsonObject, ParameterType.RequestBody);
+
+            IRestResponse response = await client.ExecuteAsync(request);
+
+
+            var data = JsonConvert.DeserializeObject<T>(response.Content,
+                              new JsonSerializerSettings
+                              {
+                                  PreserveReferencesHandling = PreserveReferencesHandling.Objects
+                              });
+
+            HttpStatusCode statusCode = response.StatusCode;
+            int numericStatusCode = (int)statusCode;
+            Debug.Log(response.Content);
+            var isSuccess = response.IsSuccessful;
+            if (isSuccess)
+            {
+                return new SuccessDataResult<T>(data, statuseCode: numericStatusCode);
+            }
+
+            return new ErrorDataResult<T>(data, numericStatusCode);
         }
 
-        public IResult Put(string url)
-        {
-            throw new System.NotImplementedException();
-        }
 
+        public async Task<IResult> DeleteAsync(string url, string id)
+        {
+            var client = new RestClient(url + "/id?=${id}");
+            var request = new RestRequest(Method.DELETE);
+            IRestResponse response = await client.ExecuteAsync(request);
+
+            HttpStatusCode statusCode = response.StatusCode;
+            int numericStatusCode = (int)statusCode;
+            var isSuccess = response.IsSuccessful;
+            if (isSuccess)
+            {
+                return new SuccessResult(numericStatusCode);
+            }
+            return new ErrorResult(numericStatusCode);
+        }
     }
 }

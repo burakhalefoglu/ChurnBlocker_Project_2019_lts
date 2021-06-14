@@ -11,7 +11,7 @@ using Assets.Appneuron.Core.CoreServices.CryptoServices.Absrtact;
 using Assets.Appneuron.Core.CoreServices.RestClientServices.Abstract;
 using Assets.Appneuron.Core.UnityManager;
 using Assets.Appneuron.ProjectModules.ChurnBlockerModule.ChurnBlockerServices.CounterServices;
-using Appneuron;
+using Appneuron.Models;
 using Appneuron.Services;
 using System.Threading.Tasks;
 
@@ -19,19 +19,22 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.LevelDat
 {
     public class LevelDatasManager : MonoBehaviour
     {
+        private string playerId;
+        private string projectId;
+        private string customerId;
+        private string EveryLoginLevelDataRequestPath;
+        private string LevelBaseDieDataRequestPath;
 
         private IEveryLoginLevelDal _everyLoginLevelDal;
         private ILevelBaseDieDal _levelBaseDieDal;
         private IRestClientServices _restClientServices;
         private ICryptoServices _cryptoServices;
 
-        private string playerId;
-        private string projectId;
-        private string customerId;
-        private string webApilink;
+
 
         private CounterServices counterServices;
         private DifficultySingletonModel difficultySingletonModel;
+        private LocalDataService localDataService;
 
         private void Awake()
         {
@@ -50,14 +53,17 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.LevelDat
         {
             IdUnityManager idUnityManager = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<IdUnityManager>();
             counterServices = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<CounterServices>();
+            localDataService = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<LocalDataService>();
+            LevelBaseDieDataRequestPath = WebApiConfigService.ClientWebApiLink + WebApiConfigService.LevelBaseDieDatasRequestName;
+
             difficultySingletonModel = DifficultySingletonModel.Instance;
 
             playerId = await idUnityManager.GetPlayerID();
-            projectId = ChurnBlockerConfigService.GetProjectID();
-            customerId = ChurnBlockerConfigService.GetCustomerID();
-            webApilink = ChurnBlockerConfigService.GetWebApiLink();
+            projectId = ChurnBlockerSingletonConfigService.Instance.GetProjectID();
+            customerId = ChurnBlockerSingletonConfigService.Instance.GetCustomerID();
+            EveryLoginLevelDataRequestPath = WebApiConfigService.ClientWebApiLink + WebApiConfigService.EveryLoginLevelDatasRequestName;
 
-            await LateStart(1);
+            await LateStart(3);
         }
 
 
@@ -66,6 +72,14 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.LevelDat
             await Task.Delay(TimeSpan.FromSeconds(waitTime));
             await CheckEveryLoginLevelDatasAndSend();
             await CheckLevelbaseDieAndSend();
+            localDataService.CheckLocalData += CheckEveryLoginLevelDatasAndSend;
+            localDataService.CheckLocalData += CheckLevelbaseDieAndSend;
+        }
+
+        private void OnApplicationQuit()
+        {
+            localDataService.CheckLocalData -= CheckEveryLoginLevelDatasAndSend;
+            localDataService.CheckLocalData -= CheckLevelbaseDieAndSend;
         }
 
         public async Task SendData
@@ -110,7 +124,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.LevelDat
             LevelBaseDieDataModel dataModel = new LevelBaseDieDataModel
             {
 
-                _id = playerId,
+                ClientId = playerId,
                 ProjectID = projectId,
                 CustomerID = customerId,
                 levelName = levelName,
@@ -123,7 +137,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.LevelDat
 
             };
 
-            var result = await _restClientServices.PostAsync<System.Object>(webApilink, dataModel);
+            var result = await _restClientServices.PostAsync<System.Object>(LevelBaseDieDataRequestPath, dataModel);
 
             if (result.Success)
             {
@@ -141,7 +155,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.LevelDat
             foreach (var fileName in FolderList)
             {
                 var dataModel = await _levelBaseDieDal.SelectAsync(ComponentsConfigService.LevelBaseDieDataPath + fileName);
-                var result = await _restClientServices.PostAsync<System.Object>(webApilink, dataModel);
+                var result = await _restClientServices.PostAsync<System.Object>(LevelBaseDieDataRequestPath, dataModel);
                 if (result.Success)
                 {
                     await _levelBaseDieDal.DeleteAsync(ComponentsConfigService.LevelBaseDieDataPath + fileName);
@@ -160,7 +174,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.LevelDat
             EveryLoginLevelDatasModel dataModel = new EveryLoginLevelDatasModel
             {
 
-                _id = playerId,
+                ClientId = playerId,
                 ProjectID = projectId,
                 CustomerID = customerId,
                 Levelname = levelname,
@@ -172,7 +186,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.LevelDat
 
             };
 
-            var result = await _restClientServices.PostAsync<System.Object>(webApilink, dataModel);
+            var result = await _restClientServices.PostAsync<System.Object>(EveryLoginLevelDataRequestPath, dataModel);
 
             if (result.Success)
             {
@@ -192,7 +206,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.LevelDat
             foreach (var fileName in FolderList)
             {
                 var dataModel = await _everyLoginLevelDal.SelectAsync(ComponentsConfigService.EveryLoginLevelDatasPath + fileName);
-                var result = await _restClientServices.PostAsync<System.Object>(webApilink, dataModel);
+                var result = await _restClientServices.PostAsync<System.Object>(EveryLoginLevelDataRequestPath, dataModel);
                 if (result.Success)
                 {
                     await _everyLoginLevelDal.DeleteAsync(ComponentsConfigService.EveryLoginLevelDatasPath + fileName);

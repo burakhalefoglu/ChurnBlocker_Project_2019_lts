@@ -10,23 +10,27 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using Appneuron.Services;
+using Appneuron.Models;
 
 namespace Assets.Appneuron.Core.UnityManager
 {
     public class JwtUnityManager : MonoBehaviour
     {
+
+        private string filePath;
+        private string fileName;
+        private string RequestPath;
+
+
         private IJwtDal _jwtDal;
         private IRestClientServices _restClientServices;
 
-        string filePath;
-        string fileName;
-        string webApiLink;
 
         private async void Awake()
         {
             filePath = ComponentsConfigService.TokenDataModel;
-            fileName = "Jwttoken";
-            webApiLink = "https://localhost:44324/WebAPI/api/Auth/clienttoken";
+            fileName = ModelNames.TokenName;
+            RequestPath = WebApiConfigService.AuthWebApiLink + WebApiConfigService.ClientTokenRequestName;
 
             using (var kernel = new StandardKernel())
             {
@@ -39,8 +43,12 @@ namespace Assets.Appneuron.Core.UnityManager
             await login();
         }
 
+        private void Start()
+        {
+        }
 
-        async Task login()
+
+        private async Task login()
         {
             var tokenmodel = await checkTokenOnfile();
             Debug.Log(tokenmodel.Token);
@@ -51,8 +59,8 @@ namespace Assets.Appneuron.Core.UnityManager
 
             }
 
-            string projectId = ChurnBlockerConfigService.GetProjectID();
-            string customerId = ChurnBlockerConfigService.GetCustomerID();
+            string projectId = ChurnBlockerSingletonConfigService.Instance.GetProjectID();
+            string customerId = ChurnBlockerSingletonConfigService.Instance.GetCustomerID();
 
             JwtRequestModel JwtRequestModel = new JwtRequestModel
             {
@@ -62,7 +70,7 @@ namespace Assets.Appneuron.Core.UnityManager
             };
 
             var result = await _restClientServices.PostAsync<JwtResponseModel>
-                (webApiLink,
+                (RequestPath,
                 JwtRequestModel);
             if (result.Success)
             {
@@ -70,7 +78,7 @@ namespace Assets.Appneuron.Core.UnityManager
             }
         }
 
-        async Task<TokenDataModel> checkTokenOnfile()
+        private async Task<TokenDataModel> checkTokenOnfile()
         {
 
 
@@ -79,7 +87,7 @@ namespace Assets.Appneuron.Core.UnityManager
 
         }
 
-        async Task SaveTokenOnfile(TokenDataModel tokenDataModel)
+        private async Task SaveTokenOnfile(TokenDataModel tokenDataModel)
         {
             TokenSingletonModel.Instance.Token = tokenDataModel.Token;
             await _jwtDal.InsertAsync(filePath + fileName, tokenDataModel);

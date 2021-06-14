@@ -10,5 +10,8 @@ namespace Assets.Appneuron.Core.CoreServices.RestClientServices.Abstract
     {
         Task<IDataResult<T>> GetAsync<T>(string url);
         Task<IDataResult<T>> PostAsync<T>(string url, object sendObject);
+        Task<IDataResult<T>> PutAsync<T>(string url, object sendObject);
+        Task<IResult> DeleteAsync(string url, string id);
+
     }
 }

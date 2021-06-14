@@ -8,12 +8,12 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.LevelDat
     [Serializable]
     public class LevelBaseDieDataModel : IEntity
     {
-        public string _id { get; set; }
+        public string ClientId { get; set; }
         public string ProjectID { get; set; }
         public string CustomerID { get; set; }
         public int DiyingTimeAfterLevelStarting { get; set; }
         public string levelName { get; set; }
-        public int DiyingDifficultyLevel{ get; set; }
+        public int DiyingDifficultyLevel { get; set; }
         public float DiyingLocationX { get; set; }
         public float DiyingLocationY { get; set; }
         public float DiyingLocationZ { get; set; }

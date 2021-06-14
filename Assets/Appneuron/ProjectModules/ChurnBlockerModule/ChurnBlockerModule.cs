@@ -1,8 +1,8 @@
 ﻿
-using Appneuron;
 using UnityEngine;
 using Appneuron.Services;
 using Assets.Appneuron.ProjectModules.ChurnBlockerModule.ChurnBlockerServices.DataCollectionServices;
+using Appneuron.Models;
 
 namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule
 {
@@ -15,6 +15,6 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule
             ComponentsConfigService.CreateFileVisualDataDirectories();
             difficultySingletonModel = DifficultySingletonModel.Instance;
         }
-     
+
     }
 }

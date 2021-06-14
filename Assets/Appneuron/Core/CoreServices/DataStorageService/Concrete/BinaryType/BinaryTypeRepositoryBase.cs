@@ -20,7 +20,8 @@ namespace Assets.Appneuron.Core.CoreServices.DataStorageService.Concrete.BinaryT
             string savePath = filePath + ".data";
             if (!File.Exists(savePath))
             {
-                return Task.FromResult<T>(null);
+                T entity = new T();
+                return Task.FromResult<T>(entity);
             }
             using (var fileStream = File.Open(savePath,
             FileMode.OpenOrCreate,

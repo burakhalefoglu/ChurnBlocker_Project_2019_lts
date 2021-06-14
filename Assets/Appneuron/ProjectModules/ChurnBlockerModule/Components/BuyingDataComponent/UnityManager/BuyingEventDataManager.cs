@@ -11,13 +11,14 @@ using System.Reflection;
 using Assets.Appneuron.Core.CoreServices.CryptoServices.Absrtact;
 using Assets.Appneuron.Core.CoreServices.RestClientServices.Abstract;
 using Assets.Appneuron.Core.UnityManager;
-using Appneuron;
+using Appneuron.Models;
 using Appneuron.Services;
 
 namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.BuyingDataComponent.UnityManager
 {
     public class BuyingEventDataManager : MonoBehaviour
     {
+        private string BuyingEventsRequestPath;
 
         private IBuyingEventDal _buyingEventDal;
         private IRestClientServices _restClientServices;
@@ -26,6 +27,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.BuyingDa
 
         private IdUnityManager idUnityManager;
         private DifficultySingletonModel difficultySingletonModel;
+        private LocalDataService localDataService;
 
         private void Awake()
         {
@@ -39,18 +41,38 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.BuyingDa
 
         }
 
-        private void Start()
+        private async void Start()
         {
             idUnityManager = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<IdUnityManager>();
+            localDataService = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<LocalDataService>();
+            BuyingEventsRequestPath = WebApiConfigService.ClientWebApiLink + WebApiConfigService.BuyingEventsRequestName;
+
             difficultySingletonModel = DifficultySingletonModel.Instance;
+            await LateStart(3);
+
+
 
         }
+
+        async Task LateStart(float waitTime)
+        {
+            await Task.Delay(TimeSpan.FromSeconds(waitTime));
+            await CheckAdvFileAndSendData();
+
+            localDataService.CheckLocalData += CheckAdvFileAndSendData;
+        }
+
+        private void OnApplicationQuit()
+        {
+            localDataService.CheckLocalData -= CheckAdvFileAndSendData;
+
+        }
+
 
         public async Task CheckAdvFileAndSendData()
         {
 
 
-            string WebApilink = ChurnBlockerConfigService.GetWebApiLink();
 
             List<string> FolderList = ComponentsConfigService.GetVisualDataFilesName(ComponentsConfigService
                                                                                       .SaveTypePath
@@ -59,7 +81,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.BuyingDa
             foreach (var fileName in FolderList)
             {
                 var dataModel = await _buyingEventDal.SelectAsync(ComponentsConfigService.BuyingEventDataPath + fileName);
-                var result = await _restClientServices.PostAsync<System.Object>(WebApilink, dataModel);
+                var result = await _restClientServices.PostAsync<System.Object>(BuyingEventsRequestPath, dataModel);
                 if (result.Success)
                 {
                     await _buyingEventDal.DeleteAsync(ComponentsConfigService.AdvEventDataPath + fileName);
@@ -79,9 +101,9 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.BuyingDa
             BuyingEventDataModel dataModel = new BuyingEventDataModel
             {
 
-                _id = await idUnityManager.GetPlayerID(),
-                ProjectID = ChurnBlockerConfigService.GetProjectID(),
-                CustomerID = ChurnBlockerConfigService.GetCustomerID(),
+                ClientId = await idUnityManager.GetPlayerID(),
+                ProjectID = ChurnBlockerSingletonConfigService.Instance.GetProjectID(),
+                CustomerID = ChurnBlockerSingletonConfigService.Instance.GetCustomerID(),
                 TrigersInlevelName = levelName,
                 ProductType = Tag,
                 DifficultyLevel = difficultyLevel,
@@ -91,8 +113,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.BuyingDa
             };
 
 
-            string webApilink = ChurnBlockerConfigService.GetWebApiLink();
-            var result = await _restClientServices.PostAsync<System.Object>(webApilink, dataModel);
+            var result = await _restClientServices.PostAsync<System.Object>(BuyingEventsRequestPath, dataModel);
 
             if (result.Success)
             {
