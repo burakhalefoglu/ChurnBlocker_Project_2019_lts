@@ -14,7 +14,7 @@ using Appneuron.Models;
 
 namespace Assets.Appneuron.Core.UnityManager
 {
-    public class JwtUnityManager : MonoBehaviour
+    public class SecurityUnityManager : MonoBehaviour
     {
 
         private string filePath;
@@ -42,11 +42,6 @@ namespace Assets.Appneuron.Core.UnityManager
 
             await login();
         }
-
-        private void Start()
-        {
-        }
-
 
         private async Task login()
         {
