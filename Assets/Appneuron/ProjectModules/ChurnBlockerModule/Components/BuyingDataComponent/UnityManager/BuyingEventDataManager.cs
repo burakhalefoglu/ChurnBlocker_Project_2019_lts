@@ -2,27 +2,23 @@
 using Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.BuyingDataComponent.DataModel;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using Ninject;
 using System.Reflection;
 using Assets.Appneuron.Core.CoreServices.CryptoServices.Absrtact;
-using Assets.Appneuron.Core.CoreServices.RestClientServices.Abstract;
 using Assets.Appneuron.Core.UnityManager;
 using Appneuron.Models;
 using Appneuron.Services;
+using Assets.Appneuron.Core.CoreServices.MessageBrockers.Kafka;
 
 namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.BuyingDataComponent.UnityManager
 {
     public class BuyingEventDataManager : MonoBehaviour
     {
-        private string BuyingEventsRequestPath;
-
         private IBuyingEventDal _buyingEventDal;
-        private IRestClientServices _restClientServices;
         private ICryptoServices _cryptoServices;
+        private IKafkaMessageBroker _kafkaMessageBroker;
 
 
         private IdUnityManager idUnityManager;
@@ -35,7 +31,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.BuyingDa
             {
                 kernel.Load(Assembly.GetExecutingAssembly());
                 _buyingEventDal = kernel.Get<IBuyingEventDal>();
-                _restClientServices = kernel.Get<IRestClientServices>();
+                _kafkaMessageBroker = kernel.Get<IKafkaMessageBroker>();
                 _cryptoServices = kernel.Get<ICryptoServices>();
             }
 
@@ -45,7 +41,6 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.BuyingDa
         {
             idUnityManager = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<IdUnityManager>();
             localDataService = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<LocalDataService>();
-            BuyingEventsRequestPath = WebApiConfigService.ClientWebApiLink + WebApiConfigService.BuyingEventsRequestName;
 
             difficultySingletonModel = DifficultySingletonModel.Instance;
             await LateStart(3);
@@ -81,7 +76,8 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.BuyingDa
             foreach (var fileName in FolderList)
             {
                 var dataModel = await _buyingEventDal.SelectAsync(ComponentsConfigService.BuyingEventDataPath + fileName);
-                var result = await _restClientServices.PostAsync<System.Object>(BuyingEventsRequestPath, dataModel);
+                
+                var result = await _kafkaMessageBroker.SendMessageAsync(dataModel);
                 if (result.Success)
                 {
                     await _buyingEventDal.DeleteAsync(ComponentsConfigService.AdvEventDataPath + fileName);
@@ -113,8 +109,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.BuyingDa
             };
 
 
-            var result = await _restClientServices.PostAsync<System.Object>(BuyingEventsRequestPath, dataModel);
-
+            var result = await _kafkaMessageBroker.SendMessageAsync(dataModel);
             if (result.Success)
             {
                 return;

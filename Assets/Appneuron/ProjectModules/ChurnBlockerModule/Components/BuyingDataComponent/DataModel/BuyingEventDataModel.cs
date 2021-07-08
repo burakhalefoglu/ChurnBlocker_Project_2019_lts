@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.BuyingDataComponent.DataModel
 {
     [Serializable]
-    public class BuyingEventDataModel : IEntity
+    public class BuyingEventDataModel : IEntity 
     {
         public string ClientId { get; set; }
         public string ProjectID { get; set; }

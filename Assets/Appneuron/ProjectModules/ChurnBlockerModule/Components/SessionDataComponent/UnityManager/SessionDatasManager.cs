@@ -7,32 +7,27 @@ using UnityEngine.SceneManagement;
 using Ninject;
 using System.Reflection;
 using Assets.Appneuron.Core.CoreServices.CryptoServices.Absrtact;
-using Assets.Appneuron.Core.CoreServices.RestClientServices.Abstract;
 using Assets.Appneuron.Core.UnityManager;
 using Assets.Appneuron.ProjectModules.ChurnBlockerModule.ChurnBlockerServices.CounterServices;
 using Appneuron.Models;
 using Appneuron.Services;
 using System.Threading.Tasks;
+using Assets.Appneuron.Core.CoreServices.MessageBrockers.Kafka;
 
 namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.SessionComponent.UnityManager
 {
     public class SessionDatasManager : MonoBehaviour
     {
-
         private string playerId;
         private string projectId;
         private string customerId;
         private bool isNewLevel = true;
         private string levelName;
-        private string LevelBaseSessionDatasRequestPath;
-        private string DailySessionDatasRequestPath;
-        private string GameSessionEveryLoginDataRequestPath;
 
 
-        private IDailySessionDal _dailySessionDal;
         private IGameSessionEveryLoginDal _gameSessionEveryLoginDal;
         private ILevelBaseSessionDal _levelBaseSessionDal;
-        private IRestClientServices _restClientServices;
+        private IKafkaMessageBroker _kafkaMessageBroker;
         private ICryptoServices _cryptoServices;
 
 
@@ -48,10 +43,9 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.SessionC
             {
 
                 kernel.Load(Assembly.GetExecutingAssembly());
-                _dailySessionDal = kernel.Get<IDailySessionDal>();
                 _gameSessionEveryLoginDal = kernel.Get<IGameSessionEveryLoginDal>();
                 _levelBaseSessionDal = kernel.Get<ILevelBaseSessionDal>();
-                _restClientServices = kernel.Get<IRestClientServices>();
+                _kafkaMessageBroker = kernel.Get<IKafkaMessageBroker>();
                 _cryptoServices = kernel.Get<ICryptoServices>();
             }
         }
@@ -62,9 +56,6 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.SessionC
             IdUnityManager idUnityManager = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<IdUnityManager>();
             counterServices = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<CounterServices>();
             localDataService = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<LocalDataService>();
-            LevelBaseSessionDatasRequestPath = WebApiConfigService.ClientWebApiLink + WebApiConfigService.LevelBaseSessionDatasRequestName;
-            DailySessionDatasRequestPath = WebApiConfigService.ClientWebApiLink + WebApiConfigService.DailySessionDatasRequestName;
-            GameSessionEveryLoginDataRequestPath = WebApiConfigService.ClientWebApiLink + WebApiConfigService.GameSessionEveryLoginDatasRequestName;
 
 
             difficultySingletonModel = DifficultySingletonModel.Instance;
@@ -90,7 +81,6 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.SessionC
         private async void OnApplicationQuit()
         {
             await SendGameSessionEveryLoginData();
-            await SendDailySessionData();
             localDataService.CheckLocalData -= CheckGameSessionEveryLoginDataAndSend;
             localDataService.CheckLocalData -= CheckLevelBaseSessionDataAndSend;
         }
@@ -126,66 +116,6 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.SessionC
 
 
 
-        private async Task SendDailySessionData()
-        {
-            string filepath = ComponentsConfigService.DailySessionDataPath;
-
-            List<string> FolderList = ComponentsConfigService.GetVisualDataFilesName
-                (ComponentsConfigService.SaveTypePath.DailySessionDataModel);
-
-            if (FolderList.Count > 0)
-            {
-                foreach (string fileName in FolderList)
-                {
-                    var dailySessionModel = await _dailySessionDal.SelectAsync(filepath + fileName);
-                    DateTime moment = DateTime.Now;
-                    bool IsToday = dailySessionModel.TodayTime.Day == moment.Day;
-                    if (IsToday)
-                    {
-                        dailySessionModel.TotalSessionTime += counterServices.TimerForGeneralSession;
-                        dailySessionModel.SessionFrequency += 1;
-
-                        await _restClientServices.PostAsync<System.Object>(DailySessionDatasRequestPath, dailySessionModel);
-                        await _dailySessionDal.DeleteAsync(filepath + fileName);
-                        await _dailySessionDal.InsertAsync(filepath + fileName, dailySessionModel);
-                    }
-                    else
-                    {
-                        var result = await _restClientServices.PostAsync<System.Object>(DailySessionDatasRequestPath, dailySessionModel);
-                        if (result.Success)
-                            await _dailySessionDal.DeleteAsync(filepath + fileName);
-                    }
-
-
-                }
-            }
-            else
-            {
-                DailySessionDataModel dailySessionDataModel = new DailySessionDataModel
-                {
-                    ClientId = playerId,
-                    ProjectID = projectId,
-                    CustomerID = customerId,
-                    SessionFrequency = 1,
-                    TotalSessionTime = counterServices.TimerForGeneralSession,
-                    TodayTime = DateTime.Now
-                };
-                await _restClientServices.PostAsync<System.Object>(DailySessionDatasRequestPath, dailySessionDataModel);
-                string fileName = _cryptoServices.GenerateStringName(6);
-                await _dailySessionDal.InsertAsync(filepath + fileName, dailySessionDataModel);
-
-            }
-
-        }
-
-
-
-
-
-
-
-
-
         private async Task SendLevelbaseSessionData(float sessionSeconds,
             string levelName,
             DateTime levelBaseGameSessionStart)
@@ -207,9 +137,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.SessionC
                 SessionFinishTime = levelBaseGameSessionFinish,
                 SessionTimeMinute = minutes
             };
-
-            var result = await _restClientServices.PostAsync<System.Object>(LevelBaseSessionDatasRequestPath, dataModel);
-
+            var result = await _kafkaMessageBroker.SendMessageAsync(dataModel);
             if (result.Success)
             {
                 return;
@@ -225,7 +153,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.SessionC
             foreach (var fileName in FolderList)
             {
                 var dataModel = await _levelBaseSessionDal.SelectAsync(ComponentsConfigService.LevelBaseSessionDataPath + fileName);
-                var result = await _restClientServices.PostAsync<System.Object>(LevelBaseSessionDatasRequestPath, dataModel);
+                var result = await _kafkaMessageBroker.SendMessageAsync(dataModel);
                 if (result.Success)
                 {
                     await _levelBaseSessionDal.DeleteAsync(ComponentsConfigService.LevelBaseSessionDataPath + fileName);
@@ -262,8 +190,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.SessionC
 
             };
 
-            var result = await _restClientServices.PostAsync<System.Object>(GameSessionEveryLoginDataRequestPath, dataModel);
-
+            var result = await _kafkaMessageBroker.SendMessageAsync(dataModel);
             if (result.Success)
             {
                 return;
@@ -282,7 +209,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.SessionC
             foreach (var fileName in FolderList)
             {
                 var dataModel = await _gameSessionEveryLoginDal.SelectAsync(ComponentsConfigService.GameSessionEveryLoginDataPath + fileName);
-                var result = await _restClientServices.PostAsync<System.Object>(GameSessionEveryLoginDataRequestPath, dataModel);
+                var result = await _kafkaMessageBroker.SendMessageAsync(dataModel);
                 if (result.Success)
                 {
                     await _gameSessionEveryLoginDal.DeleteAsync(ComponentsConfigService.GameSessionEveryLoginDataPath + fileName);

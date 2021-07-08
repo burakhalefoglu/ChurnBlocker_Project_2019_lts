@@ -6,7 +6,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.SessionC
 {
 
     [Serializable]
-    public class LevelBaseSessionDataModel : IEntity
+    public class LevelBaseSessionDataModel : IEntity 
     {
         public string ClientId { get; set; }
         public string ProjectID { get; set; }

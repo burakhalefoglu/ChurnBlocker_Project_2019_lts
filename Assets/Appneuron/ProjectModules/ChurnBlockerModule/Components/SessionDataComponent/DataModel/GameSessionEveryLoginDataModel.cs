@@ -9,7 +9,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.SessionC
     {
         public string ClientId { get; set; }
         public string ProjectID { get; set; }
-        public string CustomerID { get; set; }
+        public string CustomerID { get; set; } 
         public DateTime SessionStartTime { get; set; }
         public DateTime SessionFinishTime { get; set; }
         public float SessionTimeMinute { get; set; }

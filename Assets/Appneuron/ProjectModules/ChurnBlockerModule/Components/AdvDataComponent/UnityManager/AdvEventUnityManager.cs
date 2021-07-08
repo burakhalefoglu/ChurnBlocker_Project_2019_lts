@@ -7,22 +7,20 @@ using UnityEngine;
 using System.Reflection;
 using Ninject;
 using Assets.Appneuron.Core.CoreServices.CryptoServices.Absrtact;
-using Assets.Appneuron.Core.CoreServices.RestClientServices.Abstract;
 using Assets.Appneuron.Core.UnityManager;
 using Appneuron.Models;
 using Appneuron.Services;
 using System.Threading.Tasks;
+using Assets.Appneuron.Core.CoreServices.MessageBrockers.Kafka;
 
 namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.AdvDataComponent.UnityManager
 {
 
     public class AdvEventUnityManager : MonoBehaviour
     {
-        private string AdvEventsRequestPath;
-
         private IAdvEventDal _advEventDal;
-        private IRestClientServices _restClientServices;
         private ICryptoServices _cryptoServices;
+        private IKafkaMessageBroker _kafkaMessageBroker;
 
         private IdUnityManager idUnityManager;
         private DifficultySingletonModel difficultySingletonModel;
@@ -34,7 +32,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.AdvDataC
             {
                 kernel.Load(Assembly.GetExecutingAssembly());
                 _advEventDal = kernel.Get<IAdvEventDal>();
-                _restClientServices = kernel.Get<IRestClientServices>();
+                _kafkaMessageBroker = kernel.Get<IKafkaMessageBroker>();
                 _cryptoServices = kernel.Get<ICryptoServices>();
             }
 
@@ -44,7 +42,6 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.AdvDataC
         {
             idUnityManager = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<IdUnityManager>();
             localDataService = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<LocalDataService>();
-            AdvEventsRequestPath = WebApiConfigService.ClientWebApiLink + WebApiConfigService.AdvEventsRequestName;
             difficultySingletonModel = DifficultySingletonModel.Instance;
 
             await LateStart(3);
@@ -72,7 +69,8 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.AdvDataC
             foreach (var fileName in FolderNameList)
             {
                 var dataModel = await _advEventDal.SelectAsync(ComponentsConfigService.AdvEventDataPath + fileName);
-                var result = await _restClientServices.PostAsync<System.Object>(AdvEventsRequestPath, dataModel);
+                
+                var result = await _kafkaMessageBroker.SendMessageAsync(dataModel);
                 if (result.Success)
                 {
                     await _advEventDal.DeleteAsync(ComponentsConfigService.AdvEventDataPath + fileName);
@@ -102,9 +100,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.AdvDataC
             };
 
 
-
-            var result = await _restClientServices.PostAsync<System.Object>(AdvEventsRequestPath, advEventDataModel);
-
+            var result = await _kafkaMessageBroker.SendMessageAsync(advEventDataModel);
             if (result.Success)
             {
                 return;
