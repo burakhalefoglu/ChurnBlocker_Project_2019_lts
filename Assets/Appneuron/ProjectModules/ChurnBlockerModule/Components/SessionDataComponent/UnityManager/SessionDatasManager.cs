@@ -60,7 +60,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.SessionC
 
             difficultySingletonModel = DifficultySingletonModel.Instance;
 
-            playerId = await idUnityManager.GetPlayerID();
+            playerId = idUnityManager.GetPlayerID();
             projectId = ChurnBlockerSingletonConfigService.Instance.GetProjectID();
             customerId = ChurnBlockerSingletonConfigService.Instance.GetCustomerID();
 
@@ -80,7 +80,15 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.SessionC
 
         private async void OnApplicationQuit()
         {
-            await SendGameSessionEveryLoginData();
+            DateTime gameSessionEveryLoginFinish = counterServices.GameSessionEveryLoginStart
+            .AddSeconds(counterServices.TimerForGeneralSession);
+            float minutes = counterServices.TimerForGeneralSession / 60;
+
+            await SendGameSessionEveryLoginData(counterServices.GameSessionEveryLoginStart,
+                gameSessionEveryLoginFinish,
+                minutes,
+                playerId);
+
             localDataService.CheckLocalData -= CheckGameSessionEveryLoginDataAndSend;
             localDataService.CheckLocalData -= CheckLevelBaseSessionDataAndSend;
         }
@@ -116,7 +124,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.SessionC
 
 
 
-        private async Task SendLevelbaseSessionData(float sessionSeconds,
+        public async Task SendLevelbaseSessionData(float sessionSeconds,
             string levelName,
             DateTime levelBaseGameSessionStart)
         {
@@ -172,10 +180,12 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.SessionC
 
 
 
-        private async Task SendGameSessionEveryLoginData()
+        public async Task SendGameSessionEveryLoginData(DateTime sessionStartTime,
+            DateTime sessionFinishTime,
+            float minutes,
+            string playerId)
         {
-            DateTime gameSessionEveryLoginFinish = counterServices.GameSessionEveryLoginStart.AddSeconds(counterServices.TimerForGeneralSession);
-            float minutes = counterServices.TimerForGeneralSession / 60;
+
             string filepath = ComponentsConfigService.GameSessionEveryLoginDataPath;
 
             GameSessionEveryLoginDataModel dataModel = new GameSessionEveryLoginDataModel
@@ -184,8 +194,8 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.SessionC
                 ClientId = playerId,
                 ProjectID = projectId,
                 CustomerID = customerId,
-                SessionStartTime = counterServices.GameSessionEveryLoginStart,
-                SessionFinishTime = gameSessionEveryLoginFinish,
+                SessionStartTime = sessionStartTime,
+                SessionFinishTime = sessionFinishTime,
                 SessionTimeMinute = minutes
 
             };

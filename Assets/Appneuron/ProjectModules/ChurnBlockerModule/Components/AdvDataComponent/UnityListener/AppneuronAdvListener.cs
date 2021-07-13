@@ -1,4 +1,5 @@
-﻿using Assets.Appneuron.ProjectModules.ChurnBlockerModule.ChurnBlockerServices.CounterServices;
+﻿using Assets.Appneuron.Core.UnityManager;
+using Assets.Appneuron.ProjectModules.ChurnBlockerModule.ChurnBlockerServices.CounterServices;
 using Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.AdvDataComponent.UnityManager;
 using System.Collections;
 using System.Collections.Generic;
@@ -11,10 +12,12 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.AdvDataC
     {
         private CounterServices counterServices;
         private AdvEventUnityManager advEventUnityManager;
+        private IdUnityManager idUnityManager;
 
 
         void Start()
         {
+            idUnityManager = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<IdUnityManager>();
             advEventUnityManager = GameObject.FindGameObjectWithTag("ChurnBlocker").GetComponent<AdvEventUnityManager>();
 
             counterServices = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<CounterServices>();
@@ -26,7 +29,8 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.AdvDataC
                 float inMinutes = counterServices.LevelBaseGameTimer;
                 await advEventUnityManager.SendAdvEventData(this.gameObject.tag,
                       levelName,
-                      inMinutes);
+                      inMinutes,
+                      idUnityManager.GetPlayerID());
             });
         }
     }

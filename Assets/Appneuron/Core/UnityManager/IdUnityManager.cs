@@ -50,20 +50,14 @@ namespace Assets.Appneuron.Core.UnityManager
 
             }
         }
-        public async Task<string> GetPlayerID()
+        public string GetPlayerID()
         {
-            string filepath = GeneralData[IdPath.id];
-            string fileName = ModelNames.IdName;
-            var customerIdModel = await _bSIdDal.SelectAsync(filepath + fileName);
-            return customerIdModel._id;
+            return SystemInfo.deviceUniqueIdentifier;
         }
 
-        private string GenerateId()
+        public string GenerateId()
         {
-            //will be use
-            //"var id = _cryptoServices.GetRandomHexNumber(32);"
-            return SystemInfo.deviceUniqueIdentifier;
-
+            return _cryptoServices.GetRandomHexNumber(32);
         }
 
     }

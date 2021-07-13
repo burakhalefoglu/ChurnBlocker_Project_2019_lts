@@ -20,8 +20,6 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.BuyingDa
         private ICryptoServices _cryptoServices;
         private IKafkaMessageBroker _kafkaMessageBroker;
 
-
-        private IdUnityManager idUnityManager;
         private DifficultySingletonModel difficultySingletonModel;
         private LocalDataService localDataService;
 
@@ -39,7 +37,6 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.BuyingDa
 
         private async void Start()
         {
-            idUnityManager = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<IdUnityManager>();
             localDataService = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<LocalDataService>();
 
             difficultySingletonModel = DifficultySingletonModel.Instance;
@@ -67,8 +64,6 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.BuyingDa
         public async Task CheckAdvFileAndSendData()
         {
 
-
-
             List<string> FolderList = ComponentsConfigService.GetVisualDataFilesName(ComponentsConfigService
                                                                                       .SaveTypePath
                                                                                       .BuyingEventDataModel);
@@ -87,7 +82,8 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.BuyingDa
 
         public async Task SendAdvEventData(string Tag,
             string levelName,
-            float GameSecond)
+            float GameSecond,
+            string clientId)
 
         {
 
@@ -97,7 +93,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.BuyingDa
             BuyingEventDataModel dataModel = new BuyingEventDataModel
             {
 
-                ClientId = await idUnityManager.GetPlayerID(),
+                ClientId = clientId,
                 ProjectID = ChurnBlockerSingletonConfigService.Instance.GetProjectID(),
                 CustomerID = ChurnBlockerSingletonConfigService.Instance.GetCustomerID(),
                 TrigersInlevelName = levelName,

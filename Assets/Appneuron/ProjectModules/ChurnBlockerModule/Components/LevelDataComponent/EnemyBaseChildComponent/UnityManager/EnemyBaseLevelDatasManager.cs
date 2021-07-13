@@ -53,7 +53,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.LevelDat
 
             difficultySingletonModel = DifficultySingletonModel.Instance;
 
-            playerId = await idUnityManager.GetPlayerID();
+            playerId = idUnityManager.GetPlayerID();
             projectId = ChurnBlockerSingletonConfigService.Instance.GetProjectID();
             customerId = ChurnBlockerSingletonConfigService.Instance.GetCustomerID();
 
