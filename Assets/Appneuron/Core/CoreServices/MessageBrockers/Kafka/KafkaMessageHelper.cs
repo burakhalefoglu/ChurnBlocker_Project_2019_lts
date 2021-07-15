@@ -30,7 +30,7 @@ namespace Assets.Appneuron.Core.CoreServices.MessageBrockers.Kafka
                 try
                 {
                     await p.ProduceAsync(new TopicPartition(topicName,
-                        new Partition(new System.Random().Next(0, 5)))
+                        new Partition(new System.Random().Next(0, await MessageBrokerAdminHelper.GetPartitionCount(topicName))))
                     , new Message<Null, string>
                     {
                         Value = message
