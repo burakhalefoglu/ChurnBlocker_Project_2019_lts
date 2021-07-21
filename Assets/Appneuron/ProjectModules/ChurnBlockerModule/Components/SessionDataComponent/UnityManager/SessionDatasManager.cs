@@ -157,7 +157,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.SessionC
         private async Task CheckLevelBaseSessionDataAndSend()
         {
 
-            List<string> FolderList = ComponentsConfigService.GetVisualDataFilesName(ComponentsConfigService.SaveTypePath.LevelBaseSessionDataModel);
+            List<string> FolderList = ComponentsConfigService.GetSavedDataFilesNames(ComponentsConfigService.SaveTypePath.LevelBaseSessionDataModel);
             foreach (var fileName in FolderList)
             {
                 var dataModel = await _levelBaseSessionDal.SelectAsync(ComponentsConfigService.LevelBaseSessionDataPath + fileName);
@@ -215,7 +215,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.SessionC
         private async Task CheckGameSessionEveryLoginDataAndSend()
         {
             Debug.Log("başarılı bir şekilde gerçekleşti");
-            List<string> FolderList = ComponentsConfigService.GetVisualDataFilesName(ComponentsConfigService.SaveTypePath.GameSessionEveryLoginDataModel);
+            List<string> FolderList = ComponentsConfigService.GetSavedDataFilesNames(ComponentsConfigService.SaveTypePath.GameSessionEveryLoginDataModel);
             foreach (var fileName in FolderList)
             {
                 var dataModel = await _gameSessionEveryLoginDal.SelectAsync(ComponentsConfigService.GameSessionEveryLoginDataPath + fileName);

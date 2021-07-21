@@ -144,7 +144,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.LevelDat
         private async Task CheckLevelbaseDieAndSend()
         {
 
-            List<string> FolderList = ComponentsConfigService.GetVisualDataFilesName(ComponentsConfigService.SaveTypePath.LevelBaseDieDataModel);
+            List<string> FolderList = ComponentsConfigService.GetSavedDataFilesNames(ComponentsConfigService.SaveTypePath.LevelBaseDieDataModel);
             foreach (var fileName in FolderList)
             {
                 var dataModel = await _levelBaseDieDal.SelectAsync(ComponentsConfigService.LevelBaseDieDataPath + fileName);
@@ -199,7 +199,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.LevelDat
         private async Task CheckEveryLoginLevelDatasAndSend()
         {
 
-            List<string> FolderList = ComponentsConfigService.GetVisualDataFilesName(ComponentsConfigService.SaveTypePath.EveryLoginLevelDatasModel);
+            List<string> FolderList = ComponentsConfigService.GetSavedDataFilesNames(ComponentsConfigService.SaveTypePath.EveryLoginLevelDatasModel);
             foreach (var fileName in FolderList)
             {
                 var dataModel = await _everyLoginLevelDal.SelectAsync(ComponentsConfigService.EveryLoginLevelDatasPath + fileName);

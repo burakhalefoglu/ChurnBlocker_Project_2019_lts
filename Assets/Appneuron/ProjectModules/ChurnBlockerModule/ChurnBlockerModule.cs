@@ -12,8 +12,14 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule
         DifficultySingletonModel difficultySingletonModel;
         private void Awake()
         {
-            ComponentsConfigService.CreateFileVisualDataDirectories();
+            ComponentsConfigService.CreateFileLocalDataDirectories();
             difficultySingletonModel = DifficultySingletonModel.Instance;
+        }
+
+        private async void Start()
+        {
+            await MessageBrokerAdminHelper.SetPartitionCountAsync();
+
         }
 
     }

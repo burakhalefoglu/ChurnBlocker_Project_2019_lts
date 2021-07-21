@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using Appneuron.Services;
 using Appneuron.Models;
+using Appneuron.Core.DataModel.Concrete;
 
 namespace Assets.Appneuron.Core.UnityManager
 {
@@ -25,12 +26,14 @@ namespace Assets.Appneuron.Core.UnityManager
         private IJwtDal _jwtDal;
         private IRestClientServices _restClientServices;
 
+        private DifficultyUnityManager difficultyService;
 
-        private async void Awake()
+        private async void Start()
         {
             filePath = ComponentsConfigService.TokenDataModel;
             fileName = ModelNames.TokenName;
             RequestPath = WebApiConfigService.AuthWebApiLink + WebApiConfigService.ClientTokenRequestName;
+            difficultyService = GameObject.FindGameObjectWithTag("ChurnBlocker").GetComponent<DifficultyUnityManager>();
 
             using (var kernel = new StandardKernel())
             {
@@ -50,6 +53,7 @@ namespace Assets.Appneuron.Core.UnityManager
             if (tokenmodel.Token != "" && tokenmodel.Expiration > DateTime.Now)
             {
                 TokenSingletonModel.Instance.Token = tokenmodel.Token;
+                await difficultyService.AskDifficulty();
                 return;
 
             }
@@ -67,10 +71,15 @@ namespace Assets.Appneuron.Core.UnityManager
             var result = await _restClientServices.PostAsync<JwtResponseModel>
                 (RequestPath,
                 JwtRequestModel);
+            Debug.Log(result.Data.Data);
             if (result.Success)
             {
                 await SaveTokenOnfile(result.Data.Data);
+                TokenSingletonModel.Instance.Token = result.Data.Data.Token;
             }
+
+            await difficultyService.AskDifficulty();
+
         }
 
         private async Task<TokenDataModel> checkTokenOnfile()

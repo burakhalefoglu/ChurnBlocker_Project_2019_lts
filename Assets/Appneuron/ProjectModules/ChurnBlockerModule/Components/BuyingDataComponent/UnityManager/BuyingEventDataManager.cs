@@ -64,7 +64,7 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.BuyingDa
         public async Task CheckAdvFileAndSendData()
         {
 
-            List<string> FolderList = ComponentsConfigService.GetVisualDataFilesName(ComponentsConfigService
+            List<string> FolderList = ComponentsConfigService.GetSavedDataFilesNames(ComponentsConfigService
                                                                                       .SaveTypePath
                                                                                       .BuyingEventDataModel);
 
