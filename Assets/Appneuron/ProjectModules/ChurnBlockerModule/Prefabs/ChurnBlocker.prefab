@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 5824581475197068068}
   - component: {fileID: 3271982079144408650}
   - component: {fileID: 2749698202078803607}
-  - component: {fileID: 1011333236457447073}
+  - component: {fileID: 3373602337694304690}
   m_Layer: 0
   m_Name: ChurnBlocker
   m_TagString: ChurnBlocker
@@ -96,7 +96,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6e94ec9c0296eb7409e0ab0496bf631b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &1011333236457447073
+--- !u!114 &3373602337694304690
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

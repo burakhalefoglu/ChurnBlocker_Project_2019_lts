@@ -1,4 +1,5 @@
-﻿using Appneuron.DifficultyManagerComponent;
+﻿using Appneuron.Core.CoreServices.WebSocketService;
+using Appneuron.DifficultyManagerComponent;
 using Appneuron.Models;
 using Appneuron.Services;
 using AppneuronZeroMq;
@@ -16,46 +17,12 @@ namespace Assets.Appneuron.Core.UnityManager
 {
     public class RemoteServerUnityManager : MonoBehaviour
     {
-        private string playerId;
 
-        private void Start()
+        private void Awake()
         {
-            IdUnityManager idUnityManager = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<IdUnityManager>();
-            playerId = idUnityManager.GetPlayerID();
-
-            SubscribeRemoteEvent(playerId);
+            WebsocketClient.ListenServerManager();
         }
 
-        public void SubscribeRemoteEvent(string userID)
-        {
-            // TODO: "socket yapısı genel Appneuron componentine çekilecek. Ürünlere göre aksiyon aldırılacak. ";
 
-
-            //using (var subscriber = new ZSocket(ZSocketType.SUB))
-            //{
-            //    string connect_to = TCPSocketConfigService.Connection;
-            //    subscriber.Connect(connect_to);
-
-            //    subscriber.Subscribe(userID);
-
-            //    while (true)
-            //    {
-            //        using (var replyFrame = subscriber.ReceiveFrame())
-            //        {
-            //            string content = replyFrame.ReadString();
-
-
-            //            difficultyModel = JsonConvert.DeserializeObject<DifficultyModel>(content,
-            //              new JsonSerializerSettings
-            //              {
-            //                  PreserveReferencesHandling = PreserveReferencesHandling.Objects
-            //              });
-
-            //            DifficultyManager.AskDifficultyLevelFromServer(difficultyModel);
-            //        }
-            //    }
-
-            //}
-        }
     }
 }

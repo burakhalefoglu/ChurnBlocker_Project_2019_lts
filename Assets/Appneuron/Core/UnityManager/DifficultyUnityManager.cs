@@ -1,15 +1,9 @@
 ﻿using Appneuron.DifficultyManagerComponent;
 using Appneuron.Models;
 using Appneuron.Services;
-using AppneuronZeroMq;
 using Assets.Appneuron.Core.CoreServices.RestClientServices.Abstract;
-using Assets.Appneuron.Core.DataModel.Concrete;
 using Assets.Appneuron.Core.UnityManager;
-using Newtonsoft.Json;
 using Ninject;
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -18,7 +12,6 @@ public class DifficultyUnityManager : MonoBehaviour
 {
     private int productId;
     private string url;
-    private string playerId;
 
     private IRestClientServices _restClientServices;
 
@@ -32,7 +25,6 @@ public class DifficultyUnityManager : MonoBehaviour
 
         }
         IdUnityManager idUnityManager = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<IdUnityManager>();
-        playerId = idUnityManager.GetPlayerID();
 
         productId = AppneuronProductList.ChurnBlocker;
         url = WebApiConfigService.ClientWebApiLink + WebApiConfigService.MlResultRequestName + "?productId=" + productId;
@@ -57,34 +49,6 @@ public class DifficultyUnityManager : MonoBehaviour
 
         DifficultyManager.MakeConfing();
         DifficultyManager.AskDifficultyLevelFromServer(difficultyModel);
-
-
-
-        using (var subscriber = new ZSocket(ZSocketType.SUB))
-        {
-            string connect_to = TCPSocketConfigService.Connection;
-            subscriber.Connect(connect_to);
-
-            subscriber.Subscribe(playerId + "ChurnBlocker_DDA");
-
-            while (true)
-            {
-                using (var replyFrame = subscriber.ReceiveFrame())
-                {
-                    string content = replyFrame.ReadString();
-
-
-                    difficultyModel = JsonConvert.DeserializeObject<DifficultyModel>(content,
-                      new JsonSerializerSettings
-                      {
-                          PreserveReferencesHandling = PreserveReferencesHandling.Objects
-                      });
-
-                    DifficultyManager.AskDifficultyLevelFromServer(difficultyModel);
-                }
-            }
-
-        }
     }
 
 }
