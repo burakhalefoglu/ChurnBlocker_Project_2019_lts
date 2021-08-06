@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -18,9 +19,11 @@ namespace Assets.Appneuron.Core.UnityManager
     public class RemoteServerUnityManager : MonoBehaviour
     {
 
-        private void Awake()
+        private void Start()
         {
-            WebsocketClient.ListenServerManager();
+            Thread.Sleep(1000);
+            IdUnityManager idUnityManager = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<IdUnityManager>();
+            MlResultClient.ListenServerManager(idUnityManager.GetPlayerID());
         }
 
 
