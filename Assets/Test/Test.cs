@@ -1,4 +1,5 @@
 ﻿using Appneuron.Services;
+using AppneuronUnity.Core.UnityManager;
 using Assets.Appneuron.Core.CoreServices.MessageBrockers.Kafka;
 using Assets.Appneuron.Core.UnityManager;
 using Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.AdvDataComponent.DataModel;
@@ -43,7 +44,7 @@ public class Test : MonoBehaviour
     {
         projectId = ChurnBlockerSingletonConfigService.Instance.GetProjectID();
         customerId = ChurnBlockerSingletonConfigService.Instance.GetCustomerID();
-        idUnityManager = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<IdUnityManager>();
+        idUnityManager = new IdUnityManager();
     }
 
     async void Update()
@@ -198,7 +199,6 @@ public class Test : MonoBehaviour
                 CustomerID = customerId,
                 TrigersInlevelName = levelName,
                 AdvType = advType,
-                DifficultyLevel = difficultyLevel,
                 InMinutes = inTime,
                 TrigerdTime = trigerdTime
             };
@@ -262,7 +262,6 @@ public class Test : MonoBehaviour
             CustomerID = customerId,
             levelName = levelName,
             DiyingTimeAfterLevelStarting = minutes,
-            DiyingDifficultyLevel = difficultyLevel,
             FailLocationX = transform.x,
             FailLocationY = transform.y,
             FailLocationZ = transform.z
@@ -293,7 +292,6 @@ public class Test : MonoBehaviour
             ProjectID = projectId,
             CustomerID = customerId,   
             Levelname = levelname,
-            LevelsDifficultylevel = difficultyLevel,
             PlayingTime = minutes,
             AverageScores = averageScores,
             IsDead = isDead,

@@ -1,8 +1,5 @@
-﻿using Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.LevelDataComponent.EnemyBaseChildComponent.UnityManager;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using AppneuronUnity.ChurnBlockerModule.Components.LevelDataComponent.EnemyBaseChildComponent.UnityManager;
+using Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.LevelDataComponent.EnemyBaseChildComponent.UnityManager;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -16,15 +13,17 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.ChurnBlockerService
             int totalPowerUsage,
             Transform chartransform)
         {
+            EnemyBaseLevelController levelDatasManager = GameObject.FindGameObjectWithTag("ChurnBlocker")
+            .GetComponent<EnemyBaseLevelController>();
 
-            EnemyBaseLevelDatasManager levelDatasManager = GameObject.FindGameObjectWithTag("ChurnBlocker")
-                .GetComponent<EnemyBaseLevelDatasManager>();
-            await levelDatasManager.SendData(chartransform.position.x,
+            await new EnemybaseLevelManager().SendData(chartransform.position.x,
                 chartransform.position.y,
                 chartransform.position.z,
                 isFail,
                 charScores,
-                totalPowerUsage);
+                totalPowerUsage,
+                levelDatasManager.GetSceneName(),
+                levelDatasManager.GetInTime());
         }
 
         public static async Task SendLevelData
@@ -32,15 +31,17 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.ChurnBlockerService
             bool isFail,
             Transform chartransform)
         {
+            EnemyBaseLevelController levelDatasManager = GameObject.FindGameObjectWithTag("ChurnBlocker")
+          .GetComponent<EnemyBaseLevelController>();
 
-            EnemyBaseLevelDatasManager levelDatasManager = GameObject.FindGameObjectWithTag("ChurnBlocker")
-                .GetComponent<EnemyBaseLevelDatasManager>();
-            await levelDatasManager.SendData(chartransform.position.x,
+            await new EnemybaseLevelManager().SendData(chartransform.position.x,
                 chartransform.position.y,
                 chartransform.position.z,
                 isFail,
                 charScores,
-                0);
+                0,
+                levelDatasManager.GetSceneName(),
+                levelDatasManager.GetInTime());
         }
 
         public static async Task SendLevelData
@@ -48,30 +49,34 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.ChurnBlockerService
            bool isFail,
            int totalPowerUsage)
         {
+            EnemyBaseLevelController levelDatasManager = GameObject.FindGameObjectWithTag("ChurnBlocker")
+            .GetComponent<EnemyBaseLevelController>();
 
-            EnemyBaseLevelDatasManager levelDatasManager = GameObject.FindGameObjectWithTag("ChurnBlocker")
-                .GetComponent<EnemyBaseLevelDatasManager>();
-            await levelDatasManager.SendData(0,
+            await new EnemybaseLevelManager().SendData(0,
                 0,
                 0,
                 isFail,
                 charScores,
-                totalPowerUsage);
+                totalPowerUsage,
+                  levelDatasManager.GetSceneName(),
+                levelDatasManager.GetInTime());
         }
 
         public static async Task SendLevelData
           (int charScores,
           bool isFail)
         {
+            EnemyBaseLevelController levelDatasManager = GameObject.FindGameObjectWithTag("ChurnBlocker")
+            .GetComponent<EnemyBaseLevelController>();
 
-            EnemyBaseLevelDatasManager levelDatasManager = GameObject.FindGameObjectWithTag("ChurnBlocker")
-                .GetComponent<EnemyBaseLevelDatasManager>();
-            await levelDatasManager.SendData(0,
+            await new EnemybaseLevelManager().SendData(0,
                 0,
                 0,
                 isFail,
                 charScores,
-                0);
+                0,
+                levelDatasManager.GetSceneName(),
+                levelDatasManager.GetInTime());
         }
     }
 }

@@ -47,9 +47,6 @@ public class ConnectionService : MonoBehaviour
             var result =  await _restClientServices.IsInternetConnectedAsync();
             isConnected = result.Success;
 
-            if (isConnected)
-                await MessageBrokerAdminHelper.SetPartitionCountAsync();
-
         }
 
     }

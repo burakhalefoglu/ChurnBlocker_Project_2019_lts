@@ -1,8 +1,6 @@
-﻿using Assets.Appneuron.Core.UnityManager;
+﻿using AppneuronUnity.ChurnBlockerModule.Components.AdvDataComponent.UnityManager;
+using AppneuronUnity.Core.UnityManager;
 using Assets.Appneuron.ProjectModules.ChurnBlockerModule.ChurnBlockerServices.CounterServices;
-using Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.AdvDataComponent.UnityManager;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,27 +9,27 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.AdvDataC
     public class AppneuronAdvListener : MonoBehaviour
     {
         private CounterServices counterServices;
-        private AdvEventUnityManager advEventUnityManager;
         private IdUnityManager idUnityManager;
+        private AdvEventUnityManager advEventUnityManager;
 
 
         void Start()
         {
-            idUnityManager = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<IdUnityManager>();
-            advEventUnityManager = GameObject.FindGameObjectWithTag("ChurnBlocker").GetComponent<AdvEventUnityManager>();
+            idUnityManager = new IdUnityManager();
+            advEventUnityManager = new AdvEventUnityManager();
 
             counterServices = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<CounterServices>();
             GameObject gameObject = this.gameObject;
             Button button = gameObject.GetComponent<Button>();
             button.onClick.AddListener(async () =>
             {
-                string levelName = counterServices.SceneName;
-                float inMinutes = counterServices.LevelBaseGameTimer;
                 await advEventUnityManager.SendAdvEventData(this.gameObject.tag,
-                      levelName,
-                      inMinutes,
-                      idUnityManager.GetPlayerID());
+                counterServices.SceneName,
+                counterServices.LevelBaseGameTimer,
+                idUnityManager.GetPlayerID());
             });
         }
+
+
     }
 }

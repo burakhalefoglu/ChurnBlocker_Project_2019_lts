@@ -13,8 +13,7 @@ GameObject:
   - component: {fileID: 1560325280627053184}
   - component: {fileID: 5824581475197068068}
   - component: {fileID: 3271982079144408650}
-  - component: {fileID: 2749698202078803607}
-  - component: {fileID: 3373602337694304690}
+  - component: {fileID: 8130719499336096190}
   m_Layer: 0
   m_Name: ChurnBlocker
   m_TagString: ChurnBlocker
@@ -84,7 +83,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: be2ae7cf05f73e644b22286945dfa70c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &2749698202078803607
+--- !u!114 &8130719499336096190
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -94,17 +93,5 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6e94ec9c0296eb7409e0ab0496bf631b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &3373602337694304690
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4198045002450539997}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1337f2d6f9d188540996d5e40b14e92d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

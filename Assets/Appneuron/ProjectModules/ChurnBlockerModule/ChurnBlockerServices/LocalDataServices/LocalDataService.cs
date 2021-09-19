@@ -5,9 +5,6 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
 
-
-
-
 public class LocalDataService : MonoBehaviour
 {
 
@@ -20,17 +17,12 @@ public class LocalDataService : MonoBehaviour
     public delegate Task OnCheckLoacalData();
     public event OnCheckLoacalData CheckLocalData;
 
-
-
-
     void Start()
     {
         connectionService = GameObject.FindGameObjectWithTag("Appneuron").GetComponent<ConnectionService>();
         waitSeconds = 60 * WaitMinutes;
 
-
     }
-
 
     void Update()
     {

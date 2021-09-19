@@ -66,12 +66,12 @@ GameObject:
   m_Component:
   - component: {fileID: 8895102255309259808}
   - component: {fileID: 5274207242957940246}
-  - component: {fileID: 3870663135137022128}
   - component: {fileID: 3507306963660746198}
   - component: {fileID: 1483195996099675440}
   - component: {fileID: 682244606}
   - component: {fileID: 2466846091465153533}
   - component: {fileID: 614069306}
+  - component: {fileID: 5984932055128495771}
   m_Layer: 0
   m_Name: Appneuron
   m_TagString: Appneuron
@@ -105,18 +105,6 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 614ace63b9c1ffb4796ec8a3c3b58d8a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &3870663135137022128
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4649469468387332832}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5cfb57f3d98a62e408d62b3b9cea9c58, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!114 &3507306963660746198
@@ -179,6 +167,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a46c3f15355f96840930032915cbc8f5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &5984932055128495771
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4649469468387332832}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77b4cde4ffad5154abf6159274f8ae50, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1001 &6568945991102647405

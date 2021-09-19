@@ -1,6 +1,6 @@
 ﻿using Appneuron.Services;
+using AppneuronUnity.Core.UnityManager;
 using Assets.Appneuron.Core.CoreServices.MessageBrockers.Kafka;
-using Assets.Appneuron.Core.UnityManager;
 using Assets.Appneuron.ProjectModules.ChurnBlockerModule.Components.BuyingDataComponent.DataModel;
 using Ninject;
 using System;
@@ -89,7 +89,6 @@ public class TestBuying : MonoBehaviour
                 CustomerID = customerId,
                 TrigersInlevelName = levelName,
                 ProductType = productType,
-                DifficultyLevel = difficultyLevel,
                 InWhatMinutes = UnityEngine.Random.Range(50, 600),
                 TrigerdTime = trigerdTime
 

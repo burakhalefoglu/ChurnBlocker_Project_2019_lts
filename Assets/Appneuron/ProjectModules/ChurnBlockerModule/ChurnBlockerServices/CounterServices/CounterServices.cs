@@ -31,8 +31,6 @@ namespace Assets.Appneuron.ProjectModules.ChurnBlockerModule.ChurnBlockerService
             GameSessionEveryLoginStart = DateTime.Now;
             LevelBaseGameSessionStart = DateTime.Now;
         }
-
-        // Update is called once per frame
         void Update()
         {
             LevelBaseGameTimer += Time.deltaTime;
