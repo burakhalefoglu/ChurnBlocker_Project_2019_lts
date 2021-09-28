@@ -9,14 +9,16 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1074803788252555098}
-  - component: {fileID: 1610542517290998921}
+  - component: {fileID: 461501125440864918}
+  - component: {fileID: 1483964322330526}
+  - component: {fileID: 2490832742760512813}
   m_Layer: 0
   m_Name: ChurnBlocker
   m_TagString: ChurnBlocker
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1074803788252555098
 Transform:
   m_ObjectHideFlags: 0
@@ -32,7 +34,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1610542517290998921
+--- !u!114 &461501125440864918
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -41,7 +43,31 @@ MonoBehaviour:
   m_GameObject: {fileID: 4198045002450539997}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1501658766, guid: 6f95ea9712af9ff46ab1e2ed5de18ae5, type: 3}
+  m_Script: {fileID: 1501658766, guid: fb7bac8a5c4f0bb43aba4c1616afbf46, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1483964322330526
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4198045002450539997}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 500480126, guid: fb7bac8a5c4f0bb43aba4c1616afbf46, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &2490832742760512813
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4198045002450539997}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -669272577, guid: fb7bac8a5c4f0bb43aba4c1616afbf46, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1001 &8893976972288918254
