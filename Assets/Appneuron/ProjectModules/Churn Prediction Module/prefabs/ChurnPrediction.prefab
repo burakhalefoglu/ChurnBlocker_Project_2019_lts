@@ -9,7 +9,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4822732955170454254}
+  - component: {fileID: 4295574794939367056}
   - component: {fileID: 4529958935596827680}
+  - component: {fileID: 5652785662510258477}
   m_Layer: 0
   m_Name: ChurnPrediction
   m_TagString: ChurnPrediction
@@ -31,6 +33,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4295574794939367056
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4822732955170454252}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1184711962, guid: fb7bac8a5c4f0bb43aba4c1616afbf46, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &4529958935596827680
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -43,7 +57,18 @@ MonoBehaviour:
   m_Script: {fileID: -535400634, guid: fb7bac8a5c4f0bb43aba4c1616afbf46, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  DefaultIAdvFrequencyStrategy:
-    _Keys:
-    - str
-    _Values: 01000000
+  defaultIAdvFrequencyStrategy:
+    _Keys: []
+    _Values: 
+--- !u!114 &5652785662510258477
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4822732955170454252}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 500480126, guid: fb7bac8a5c4f0bb43aba4c1616afbf46, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

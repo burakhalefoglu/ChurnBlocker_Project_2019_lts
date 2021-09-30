@@ -3,7 +3,13 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - btn
+  - ChurnBlocker
+  - Appneuron
+  - ChurnPrediction
+  - Items
+  - ChurnOffer
   layers:
   - Default
   - TransparentFX
