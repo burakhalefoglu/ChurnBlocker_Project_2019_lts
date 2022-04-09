@@ -9,7 +9,7 @@ using UnityEngine.UI;
 public class ChurnOfferController : MonoBehaviour
 {
     private ChurnPredictionWorkerModule churnPredictionWorkerModule;
-    private RemoteOfferModel remoteOfferModel;
+    private RemoteOfferEventModel remoteOfferModel;
 
     void Start()
     {
